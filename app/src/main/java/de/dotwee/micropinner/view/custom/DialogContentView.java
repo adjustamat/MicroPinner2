@@ -19,6 +19,9 @@ public class DialogContentView
 private Spinner spinnerVisibility;
 private Spinner spinnerPriority;
 
+public static ArrayAdapter<String> visibilityLocaleStrs;
+public static ArrayAdapter<String> priorityLocaleStrs;
+
 public DialogContentView(Context context)
 {
    super(context);
@@ -58,6 +61,7 @@ private void setVisibilityAdapter()
       
       visibilityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
       spinnerVisibility.setAdapter(visibilityAdapter);
+      visibilityLocaleStrs = visibilityAdapter;
    }
 }
 
@@ -71,6 +75,7 @@ private void setPriorityAdapter()
       
       priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
       spinnerPriority.setAdapter(priorityAdapter);
+      priorityLocaleStrs = priorityAdapter;
    }
 }
 

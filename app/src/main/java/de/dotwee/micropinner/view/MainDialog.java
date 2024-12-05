@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -18,8 +17,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 import de.dotwee.micropinner.R;
+import de.dotwee.micropinner.database.PinSpec.Data;
 import de.dotwee.micropinner.presenter.MainPresenter;
-import de.dotwee.micropinner.presenter.MainPresenterImpl;
 import de.dotwee.micropinner.receiver.OnBootReceiver;
 import de.dotwee.micropinner.view.custom.DialogContentView;
 import de.dotwee.micropinner.view.custom.DialogFooterView;
@@ -30,7 +29,7 @@ import de.dotwee.micropinner.view.custom.DialogHeaderView;
  */
 public class MainDialog
  extends AppCompatActivity
- implements MainPresenter.Data
+ implements Data
 {
 
 static {
@@ -57,7 +56,7 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    
    this.setContentView(R.layout.dialog_main);
    
-   MainPresenter mainPresenter = new MainPresenterImpl(this, getIntent());
+   MainPresenter mainPresenter = new MainPresenter(this, getIntent());
    
    DialogHeaderView headerView = findViewById(R.id.dialogHeaderView);
    headerView.setMainPresenter(mainPresenter);
@@ -96,24 +95,14 @@ public void setContentView(@LayoutRes int layoutResID)
  * @return Value of the content visibility spinner widget.
  */
 @Override
-public int getVisibility()
+public Integer getVisibility()
 {
    Spinner spinner = findViewById(R.id.spinnerVisibility);
    if(spinner != null) {
-      
-      switch(spinner.getSelectedItemPosition()) {
-      case 0:
-         return Notification.VISIBILITY_PUBLIC;
-      
-      case 1:
-         return Notification.VISIBILITY_PRIVATE;
-      
-      case 2:
-         return Notification.VISIBILITY_SECRET;
-      }
+      return spinner.getSelectedItemPosition();
    }
    
-   return 0;
+   return null;
 }
 
 /**
@@ -121,27 +110,14 @@ public int getVisibility()
  * @return Value of the content priority spinner widget.
  */
 @Override
-public int getPriority()
+public Integer getPriority()
 {
    Spinner spinner = findViewById(R.id.spinnerPriority);
    if(spinner != null) {
-      
-      switch(spinner.getSelectedItemPosition()) {
-      case 0:
-         return Notification.PRIORITY_DEFAULT;
-      
-      case 1:
-         return Notification.PRIORITY_MIN;
-      
-      case 2:
-         return Notification.PRIORITY_LOW;
-      
-      case 3:
-         return Notification.PRIORITY_HIGH;
-      }
+      return spinner.getSelectedItemPosition();
    }
    
-   return 0;
+   return null;
 }
 
 /**

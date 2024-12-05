@@ -12,7 +12,7 @@ public final class Constants
 public static final PinSpec testPin;
 private static final String LOG_TAG = "Constants";
 public static final String testPinTitle = LOG_TAG, testPinContent = LOG_TAG;
-                                                    // static pin to test
+// static pin to test
 
 static {
    testPin = new PinSpec(testPinTitle, testPinContent, Notification.VISIBILITY_PRIVATE,

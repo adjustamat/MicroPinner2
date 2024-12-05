@@ -25,6 +25,8 @@
          </intent-filter>
       </activity>
 
+      <receiver android:name=".receiver.OnCancelReceiver"/>
+
       <receiver android:name=".receiver.OnDeleteReceiver"/>
 
       <receiver android:name=".receiver.OnClipReceiver"/>

@@ -2,9 +2,13 @@ package de.dotwee.micropinner.database;
 
 import java.io.Serializable;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Build.VERSION_CODES;
 
 /**
  * Created by lukas on 10.08.2016.
@@ -13,14 +17,56 @@ public class PinSpec
  implements Serializable
 {
 private long id;
-private String title;
-private String content;
+private final String title;
+private final String content;
 
-private int visibility;
-private int priority;
+private final int visibility;
+private final int priority;
 
-private boolean persistent;
-private boolean showActions;
+private final boolean persistent;
+private final boolean showActions;
+
+/**
+ * Created by Lukas Wolfsteiner on 29.10.2015.
+ */
+public interface Data
+{
+   /**
+    * This method reads the value of the visibility spinner widget.
+    * @return Value of the content visibility spinner widget.
+    */
+   Integer getVisibility();
+   
+   /**
+    * This method reads the value of the priority spinner widget.
+    * @return Value of the content priority spinner widget.
+    */
+   Integer getPriority();
+   
+   /**
+    * This method reads the value of the title editText widget.
+    * @return Value of the content title widget.
+    */
+   String getPinTitle();
+   
+   /**
+    * This method reads the value of the content editText widget.
+    * @return Value of the content editText widget.
+    */
+   String getPinContent();
+   
+   /**
+    * This method reads the state of the persistent checkbox widget.
+    * @return State of the persistent checkbox.
+    */
+   boolean isPersistent();
+   
+   /**
+    * This method reads the state of the show-actions checkbox widget.
+    * @return State of the show-actions checkbox.
+    */
+   boolean showActions();
+}
 
 public PinSpec(@NonNull String title, @NonNull String content, int visibility, int priority,
  boolean persistent, boolean showActions)
@@ -39,13 +85,13 @@ PinSpec(@NonNull Cursor cursor)
 {
    ContentValues contentValues = new ContentValues();
    DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
-   setId(contentValues.getAsLong(PinDatabase.COLUMN_ID));
-   setTitle(contentValues.getAsString(PinDatabase.COLUMN_TITLE));
-   setContent(contentValues.getAsString(PinDatabase.COLUMN_CONTENT));
-   setVisibility(contentValues.getAsInteger(PinDatabase.COLUMN_VISIBILITY));
-   setPriority(contentValues.getAsInteger(PinDatabase.COLUMN_PRIORITY));
-   setPersistent(contentValues.getAsInteger(PinDatabase.COLUMN_PERSISTENT) != 0);
-   setShowActions(contentValues.getAsInteger(PinDatabase.COLUMN_SHOW_ACTIONS) != 0);
+   this.id = contentValues.getAsLong(PinDatabase.COLUMN_ID);
+   this.title = contentValues.getAsString(PinDatabase.COLUMN_TITLE);
+   this.content = contentValues.getAsString(PinDatabase.COLUMN_CONTENT);
+   this.visibility = contentValues.getAsInteger(PinDatabase.COLUMN_VISIBILITY);
+   this.priority = contentValues.getAsInteger(PinDatabase.COLUMN_PRIORITY);
+   this.persistent = (contentValues.getAsInteger(PinDatabase.COLUMN_PERSISTENT) != 0);
+   this.showActions = (contentValues.getAsInteger(PinDatabase.COLUMN_SHOW_ACTIONS) != 0);
 }
 
 public long getId()
@@ -69,40 +115,68 @@ public String getTitle()
    return title;
 }
 
-private void setTitle(@NonNull String title)
-{
-   this.title = title;
-}
-
 @NonNull
 public String getContent()
 {
    return content;
 }
 
-private void setContent(@NonNull String content)
-{
-   this.content = content;
-}
-
-public int getVisibility()
+public int getVisibilityIndex()
 {
    return visibility;
 }
 
-private void setVisibility(int visibility)
+public int getVisibility()
 {
-   this.visibility = visibility;
+   switch(visibility) {
+   case 0:
+      return Notification.VISIBILITY_PUBLIC;
+   case 1:
+      return Notification.VISIBILITY_PRIVATE;
+   case 2:
+      return Notification.VISIBILITY_SECRET;
+   default:
+      throw new RuntimeException("illegal visibility value");
+   }
 }
 
-public int getPriority()
+public int getPriorityIndex()
 {
    return priority;
 }
 
-private void setPriority(int priority)
+public int getPreOreoPriority()
 {
-   this.priority = priority;
+   switch(priority) {
+   case 0:
+      return Notification.PRIORITY_DEFAULT;
+   case 1:
+      return Notification.PRIORITY_MIN;
+   case 2:
+      return Notification.PRIORITY_LOW;
+   case 3:
+      return Notification.PRIORITY_HIGH;
+   default:
+      throw new RuntimeException("illegal priority value");
+   }
+}
+
+@RequiresApi(VERSION_CODES.O) // OREO == 26
+public int getImportance()
+{
+   // these constants actually only need VERSION_CODES.N // NOUGAT == 24
+   switch(priority) {
+   case 0:
+      return NotificationManager.IMPORTANCE_DEFAULT;
+   case 1:
+      return NotificationManager.IMPORTANCE_MIN;
+   case 2:
+      return NotificationManager.IMPORTANCE_LOW;
+   case 3:
+      return NotificationManager.IMPORTANCE_HIGH;
+   default:
+      throw new RuntimeException("illegal priority value");
+   }
 }
 
 public boolean isPersistent()
@@ -110,19 +184,9 @@ public boolean isPersistent()
    return persistent;
 }
 
-private void setPersistent(boolean persistent)
-{
-   this.persistent = persistent;
-}
-
 public boolean isShowActions()
 {
    return showActions;
-}
-
-private void setShowActions(boolean showActions)
-{
-   this.showActions = showActions;
 }
 
 @NonNull
@@ -132,8 +196,8 @@ ContentValues toContentValues()
    
    contentValues.put(PinDatabase.COLUMN_TITLE, getTitle());
    contentValues.put(PinDatabase.COLUMN_CONTENT, getContent());
-   contentValues.put(PinDatabase.COLUMN_VISIBILITY, getVisibility());
-   contentValues.put(PinDatabase.COLUMN_PRIORITY, getPriority());
+   contentValues.put(PinDatabase.COLUMN_VISIBILITY, getVisibilityIndex());
+   contentValues.put(PinDatabase.COLUMN_PRIORITY, getPriorityIndex());
    contentValues.put(PinDatabase.COLUMN_PERSISTENT, isPersistent() ? 1 : 0);
    contentValues.put(PinDatabase.COLUMN_SHOW_ACTIONS, isShowActions() ? 1 : 0);
    
