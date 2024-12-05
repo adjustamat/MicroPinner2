@@ -1,55 +1,40 @@
-apply plugin: 'com.android.application'
-
-android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
-
-    defaultConfig {
-        applicationId "de.dotwee.micropinner"
-        minSdkVersion 16
-        targetSdkVersion 27
-        versionCode 29
-        versionName "v2.2.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-
-        debug {
-            minifyEnabled false
-        }
-
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    compileOptions {
-        incremental false
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+plugins{
+   alias(libs.plugins.android.application)
 }
+android{
+   namespace 'de.dotwee.micropinner'
+   compileSdk 34
 
-dependencies {
-    implementation 'com.android.support:appcompat-v7:27.1.0'
+   defaultConfig{
+      applicationId "de.dotwee.micropinner"
+      minSdk 16
+      targetSdk 34
+      versionCode 29
+      versionName "v2.2.0"
 
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1') {
-        // Necessary if your app targets Marshmallow (since Espresso
-        // hasn't moved to Marshmallow yet)
-        exclude group: 'com.android.support', module: 'support-annotations'
-    }
+   }
 
-    androidTestImplementation('com.android.support.test.espresso:espresso-intents:3.0.1') {
-        // Necessary to avoid version conflicts
-        exclude group: 'com.android.support', module: 'support-annotations'
-    }
+   buildFeatures{
+      buildConfig = true
+   }
 
-    androidTestImplementation('com.android.support.test:runner:1.0.1') {
-        // Necessary if your app targets Marshmallow (since the test runner
-        // hasn't moved to Marshmallow yet)
-        exclude group: 'com.android.support', module: 'support-annotations'
-    }
+   buildTypes{
+      debug{
+         minifyEnabled false
+      }
+      release{
+         minifyEnabled true
+         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      }
+   }
+   compileOptions{
+      sourceCompatibility JavaVersion.VERSION_1_8
+      targetCompatibility JavaVersion.VERSION_1_8
+   }
+}
+dependencies{
+   implementation libs.appcompat
+   configurations.implementation{
+      exclude group:'org.jetbrains.kotlin', module:'kotlin-stdlib-jdk8'
+   }
 }
