@@ -7,7 +7,7 @@ android{
 
    defaultConfig{
       applicationId "de.dotwee.micropinner"
-      minSdk 16
+      minSdk 21
       targetSdk 34
       versionCode 29
       versionName "v2.2.0"
@@ -34,6 +34,10 @@ android{
 }
 dependencies{
    implementation libs.appcompat
+   androidTestImplementation libs.espresso.core
+   androidTestImplementation libs.espresso.intents
+   androidTestImplementation libs.runner
+   androidTestImplementation libs.rules
    configurations.implementation{
       exclude group:'org.jetbrains.kotlin', module:'kotlin-stdlib-jdk8'
    }
