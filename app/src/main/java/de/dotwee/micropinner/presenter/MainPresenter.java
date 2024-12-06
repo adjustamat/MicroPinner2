@@ -18,10 +18,10 @@ import android.widget.Toast;
 import de.dotwee.micropinner.R;
 import de.dotwee.micropinner.database.PinDatabase;
 import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.database.PinSpec.Data;
 import de.dotwee.micropinner.receiver.OnDeleteReceiver;
 import de.dotwee.micropinner.tools.NotificationTools;
 import de.dotwee.micropinner.tools.PreferencesHandler;
+import de.dotwee.micropinner.view.MainDialog;
 
 /**
  * Created by Lukas Wolfsteiner on 29.10.2015.
@@ -31,13 +31,13 @@ public class MainPresenter
 private static final String TAG = MainPresenter.class.getSimpleName();
 private final PreferencesHandler preferencesHandler;
 private final NotificationManager notificationManager;
-private final Activity activity;
+private final MainDialog activity;
 
 private final PinDatabase pinDatabase;
 private final Intent intent;
 private PinSpec parentPin;
 
-public MainPresenter(@NonNull Activity activity, @NonNull Intent intent)
+public MainPresenter(@NonNull MainDialog activity, @NonNull Intent intent)
 {
    this.preferencesHandler = PreferencesHandler.getInstance(activity);
    this.activity = activity;
@@ -62,23 +62,12 @@ public MainPresenter(@NonNull Activity activity, @NonNull Intent intent)
 }
 
 /**
- * This method handles a long-click on a switch
- */
-public void onSwitchHold()
-{
-   Toast.makeText(activity, "Theme will change automatically by day and night.", Toast.LENGTH_SHORT)
-    .show();
-}
-
-/**
  * This method handles the click on the positive dialog button.
  */
 public void onButtonPositive()
 {
-   PinSpec newPin;
-   
    try {
-      newPin = toPin();
+      PinSpec newPin = toPin(); // toPin() throws Exception if user entered no title
       
       if(hasParentPin()) {
          newPin.setId(parentPin.getId());
@@ -182,28 +171,22 @@ public boolean hasParentPin()
 
 /**
  * This method creates a {@link PinSpec} from the view.
- * @return A not null {@link PinSpec}.
+ * @return A new {@link PinSpec}
  * @throws Exception
- *  if pin is null or an error appeared on creation
+ *  if pin could not be created
  */
 @NonNull
 public PinSpec toPin()
  throws Exception
 {
-   if(activity instanceof Data) {
-      Data data = (Data) activity;
-      
-      if(data.getPinTitle().isEmpty()) {
-         Toast.makeText(activity, R.string.message_empty_title, Toast.LENGTH_SHORT).show();
-         throw new Exception(activity.getString(R.string.message_empty_title));
-      }
-      else {
-         return new PinSpec(data.getPinTitle(), data.getPinContent(), data.getVisibility(),
-          data.getPriority(), data.isPersistent(), data.showActions());
-      }
+   if(activity.getPinTitle().isEmpty()) {
+      Toast.makeText(activity, R.string.message_empty_title, Toast.LENGTH_SHORT).show();
+      throw new Exception("user entered no title, can't create pin.");
    }
    else {
-      throw new IllegalStateException("Activity does not implement the Data callback");
+      return new PinSpec(activity.getPinTitle(), activity.getPinContent(),
+       activity.getVisibility(), activity.getPriority(),
+       activity.isPersistent(), activity.showActions());
    }
 }
 

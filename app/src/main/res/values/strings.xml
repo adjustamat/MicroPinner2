@@ -5,9 +5,6 @@
    <string name="main_name">New Pin</string>
    <string name="edit_name">Edit Pin</string>
 
-   <string name="input_description_title">Title</string>
-   <string name="input_description_content">Content</string>
-
    <string name="input_description_priority">Priority</string>
    <string name="input_description_visibility">Visibility</string>
 
@@ -21,12 +18,11 @@
    <string name="input_hint_title">Title</string>
    <string name="input_hint_content">Content</string>
 
-   <string name="message_visibility_unsupported">Hey! Seems like you are using a older Android Version, where the visibility-setting is unsupported.</string>
    <string name="message_clipped_pin">Pin has been copied to clipboard.</string>
    <string name="message_empty_title">The title has to contain text.</string>
    <string name="message_save_to_clipboard">Save to clipboard</string>
 
-   <string name="noti_chan_name">Pin %s %s</string>
+   <string name="noti_chan_name">Pins (%s %s)</string>
 
    <string name="visibility_public">public</string>
    <string name="visibility_private">private</string>
@@ -36,4 +32,5 @@
    <string name="priority_low">low</string>
    <string name="priority_high">high</string>
    <string name="priority_default">default</string>
+   <string name="requires_your_permission">MicroPinner requires your permission</string>
 </resources>

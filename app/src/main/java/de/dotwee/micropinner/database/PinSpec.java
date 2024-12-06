@@ -26,52 +26,9 @@ private final int priority;
 private final boolean persistent;
 private final boolean showActions;
 
-/**
- * Created by Lukas Wolfsteiner on 29.10.2015.
- */
-public interface Data
-{
-   /**
-    * This method reads the value of the visibility spinner widget.
-    * @return Value of the content visibility spinner widget.
-    */
-   Integer getVisibility();
-   
-   /**
-    * This method reads the value of the priority spinner widget.
-    * @return Value of the content priority spinner widget.
-    */
-   Integer getPriority();
-   
-   /**
-    * This method reads the value of the title editText widget.
-    * @return Value of the content title widget.
-    */
-   String getPinTitle();
-   
-   /**
-    * This method reads the value of the content editText widget.
-    * @return Value of the content editText widget.
-    */
-   String getPinContent();
-   
-   /**
-    * This method reads the state of the persistent checkbox widget.
-    * @return State of the persistent checkbox.
-    */
-   boolean isPersistent();
-   
-   /**
-    * This method reads the state of the show-actions checkbox widget.
-    * @return State of the show-actions checkbox.
-    */
-   boolean showActions();
-}
-
 public PinSpec(@NonNull String title, @NonNull String content, int visibility, int priority,
  boolean persistent, boolean showActions)
 {
-   
    this.id = -1;
    this.title = title;
    this.content = content;
@@ -85,6 +42,7 @@ PinSpec(@NonNull Cursor cursor)
 {
    ContentValues contentValues = new ContentValues();
    DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
+   
    this.id = contentValues.getAsLong(PinDatabase.COLUMN_ID);
    this.title = contentValues.getAsString(PinDatabase.COLUMN_TITLE);
    this.content = contentValues.getAsString(PinDatabase.COLUMN_CONTENT);
@@ -92,6 +50,19 @@ PinSpec(@NonNull Cursor cursor)
    this.priority = contentValues.getAsInteger(PinDatabase.COLUMN_PRIORITY);
    this.persistent = (contentValues.getAsInteger(PinDatabase.COLUMN_PERSISTENT) != 0);
    this.showActions = (contentValues.getAsInteger(PinDatabase.COLUMN_SHOW_ACTIONS) != 0);
+}
+
+@NonNull
+ContentValues toContentValues()
+{
+   ContentValues contentValues = new ContentValues();
+   contentValues.put(PinDatabase.COLUMN_TITLE, getTitle());
+   contentValues.put(PinDatabase.COLUMN_CONTENT, getContent());
+   contentValues.put(PinDatabase.COLUMN_VISIBILITY, getVisibilityIndex());
+   contentValues.put(PinDatabase.COLUMN_PRIORITY, getPriorityIndex());
+   contentValues.put(PinDatabase.COLUMN_PERSISTENT, isPersistent() ? 1 : 0);
+   contentValues.put(PinDatabase.COLUMN_SHOW_ACTIONS, isShowActions() ? 1 : 0);
+   return contentValues;
 }
 
 public long getId()
@@ -187,21 +158,6 @@ public boolean isPersistent()
 public boolean isShowActions()
 {
    return showActions;
-}
-
-@NonNull
-ContentValues toContentValues()
-{
-   ContentValues contentValues = new ContentValues();
-   
-   contentValues.put(PinDatabase.COLUMN_TITLE, getTitle());
-   contentValues.put(PinDatabase.COLUMN_CONTENT, getContent());
-   contentValues.put(PinDatabase.COLUMN_VISIBILITY, getVisibilityIndex());
-   contentValues.put(PinDatabase.COLUMN_PRIORITY, getPriorityIndex());
-   contentValues.put(PinDatabase.COLUMN_PERSISTENT, isPersistent() ? 1 : 0);
-   contentValues.put(PinDatabase.COLUMN_SHOW_ACTIONS, isShowActions() ? 1 : 0);
-   
-   return contentValues;
 }
 
 @NonNull

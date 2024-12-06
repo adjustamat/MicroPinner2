@@ -4,19 +4,6 @@
  >
 
    <TableRow style="@style/DialogView">
-      <TextView
-       android:text="@string/input_description_title"
-       android:layout_column="0"
-       style="@style/DialogText.Description"
-       />
-      <TextView
-       android:text="@string/input_description_content"
-       android:layout_column="1"
-       style="@style/DialogText.Description"
-       />
-   </TableRow>
-
-   <TableRow style="@style/DialogView">
       <EditText
        android:id="@+id/editTextTitle"
        android:layout_column="0"

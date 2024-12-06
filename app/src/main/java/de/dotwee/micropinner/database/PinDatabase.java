@@ -1,13 +1,13 @@
 package de.dotwee.micropinner.database;
 
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import androidx.annotation.NonNull;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.ArrayMap;
 import android.util.Log;
 import de.dotwee.micropinner.BuildConfig;
 import static android.database.DatabaseUtils.queryNumEntries;
@@ -198,24 +198,19 @@ private void onDatabaseAction()
 }
 
 /**
- * This method returns a map of all pins in the database with their id as key
- * @return map of all pins
+ * Returns all pins in the database.
+ * @return LinkedList with all pins
  */
 @NonNull
-public Map<Integer, PinSpec> getAllPinsMap()
+public List<PinSpec> getAllPins()
 {
-   Map<Integer, PinSpec> pinMap = new ArrayMap<>();
-   
+   List<PinSpec> list = new LinkedList<>();
    Cursor cursor = database.query(PinDatabase.TABLE_PINS, columns, null, null, null, null, null);
-   if(cursor.moveToFirst()) {
-      while(!cursor.isAfterLast()) {
-         PinSpec pinSpec = new PinSpec(cursor);
-         pinMap.put(pinSpec.getIdAsInt(), pinSpec);
-         cursor.moveToNext();
-      }
+   while(cursor.moveToNext()) {
+      PinSpec pinSpec = new PinSpec(cursor);
+      list.add(pinSpec);
    }
-   
    cursor.close();
-   return pinMap;
+   return list;
 }
 }

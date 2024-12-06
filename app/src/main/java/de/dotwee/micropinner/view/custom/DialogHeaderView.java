@@ -15,7 +15,7 @@ import de.dotwee.micropinner.R;
  */
 public class DialogHeaderView
  extends AbstractDialogView
- implements SwitchCompat.OnCheckedChangeListener, View.OnClickListener, View.OnLongClickListener
+ implements SwitchCompat.OnCheckedChangeListener, View.OnClickListener
 {
 
 private static final String TAG = DialogHeaderView.class.getSimpleName();
@@ -44,12 +44,10 @@ public void init()
    inflate(getContext(), R.layout.dialog_main_head, this);
    
    LinearLayout linearLayoutHeader = findViewById(R.id.linearLayoutHeader);
-   linearLayoutHeader.setOnLongClickListener(this);
    linearLayoutHeader.setOnClickListener(this);
    
    switchAdvanced = findViewById(R.id.switchAdvanced);
    switchAdvanced.setOnCheckedChangeListener(this);
-   switchAdvanced.setOnLongClickListener(this);
 }
 
 @Override
@@ -72,31 +70,5 @@ public void onClick(View view)
          Log.w(TAG, "Registered click on unknown view");
       }
    }
-}
-
-/**
- * Called when a view has been clicked and held.
- * @param view
- *  The view that was clicked and held.
- * @return true if the callback consumed the long click, false otherwise.
- */
-@Override
-public boolean onLongClick(View view)
-{
-   checkIfPresenterNull();
-   
-   int id = view.getId();
-   if(id == R.id.switchAdvanced) {
-      mainPresenter.onSwitchHold();
-      return true;
-   }
-   else if(id == R.id.linearLayoutHeader) {
-      mainPresenter.onSwitchHold();
-      return true;
-   }
-   if(BuildConfig.DEBUG) {
-      Log.w(TAG, "Registered long-click on unknown view");
-   }
-   return false;
 }
 }

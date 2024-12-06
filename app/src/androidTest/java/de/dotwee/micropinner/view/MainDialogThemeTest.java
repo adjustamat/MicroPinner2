@@ -85,7 +85,7 @@ public void testThemeLightAccent()
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_description_title, R.string.input_description_content,
+    R.string.input_hint_title, R.string.input_hint_content,
     R.string.input_description_priority, R.string.input_description_visibility
    }) {
       onView(withText(description)).check(
@@ -119,7 +119,7 @@ public void testThemeDarkAccent()
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_description_title, R.string.input_description_content,
+    R.string.input_hint_title, R.string.input_hint_content,
     R.string.input_description_priority, R.string.input_description_visibility
    }) {
       onView(withText(description)).check(matches(Matches.withTextColor(

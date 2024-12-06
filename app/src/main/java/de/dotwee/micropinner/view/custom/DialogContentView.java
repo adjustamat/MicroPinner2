@@ -6,7 +6,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
-
 import de.dotwee.micropinner.R;
 
 /**
@@ -16,11 +15,9 @@ public class DialogContentView
  extends AbstractDialogView
  implements CheckBox.OnCheckedChangeListener
 {
-private Spinner spinnerVisibility;
-private Spinner spinnerPriority;
 
-public static ArrayAdapter<String> visibilityLocaleStrs;
-public static ArrayAdapter<String> priorityLocaleStrs;
+private static ArrayAdapter<String> visibilityLocaleStrs;
+private static ArrayAdapter<String> priorityLocaleStrs;
 
 public DialogContentView(Context context)
 {
@@ -44,39 +41,39 @@ public void init()
    
    inflate(getContext(), R.layout.dialog_main_content, this);
    
-   spinnerVisibility = findViewById(R.id.spinnerVisibility);
-   setVisibilityAdapter();
+   Spinner spinnerVisibility = findViewById(R.id.spinnerVisibility);
+   getVisibilityAdapter(getContext(), spinnerVisibility);
    
-   spinnerPriority = findViewById(R.id.spinnerPriority);
-   setPriorityAdapter();
+   Spinner spinnerPriority = findViewById(R.id.spinnerPriority);
+   getPriorityAdapter(getContext(), spinnerPriority);
 }
 
-private void setVisibilityAdapter()
+public static ArrayAdapter<String> getVisibilityAdapter(Context ctx, Spinner spinnerVisibility)
 {
+   if(visibilityLocaleStrs == null) {
+      visibilityLocaleStrs =
+       new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_item,
+        ctx.getResources().getStringArray(R.array.array_visibilities));
+      visibilityLocaleStrs.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+   }
    if(spinnerVisibility != null) {
-      
-      ArrayAdapter<String> visibilityAdapter =
-       new ArrayAdapter<>(spinnerVisibility.getContext(), android.R.layout.simple_spinner_item,
-        this.getResources().getStringArray(R.array.array_visibilities));
-      
-      visibilityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      spinnerVisibility.setAdapter(visibilityAdapter);
-      visibilityLocaleStrs = visibilityAdapter;
+      spinnerVisibility.setAdapter(visibilityLocaleStrs);
    }
+   return visibilityLocaleStrs;
 }
 
-private void setPriorityAdapter()
+public static ArrayAdapter<String> getPriorityAdapter(Context ctx, Spinner spinnerPriority)
 {
-   if(spinnerPriority != null) {
-      
-      ArrayAdapter<String> priorityAdapter =
-       new ArrayAdapter<>(spinnerPriority.getContext(), android.R.layout.simple_spinner_item,
-        this.getResources().getStringArray(R.array.array_priorities));
-      
-      priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      spinnerPriority.setAdapter(priorityAdapter);
-      priorityLocaleStrs = priorityAdapter;
+   if(priorityLocaleStrs == null) {
+      priorityLocaleStrs =
+       new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_item,
+        ctx.getResources().getStringArray(R.array.array_priorities));
+      priorityLocaleStrs.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
    }
+   if(spinnerPriority != null) {
+      spinnerPriority.setAdapter(priorityLocaleStrs);
+   }
+   return priorityLocaleStrs;
 }
 
 @Override

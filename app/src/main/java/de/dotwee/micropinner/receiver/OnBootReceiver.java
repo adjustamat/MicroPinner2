@@ -1,15 +1,17 @@
 package de.dotwee.micropinner.receiver;
 
-import java.util.Map;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.util.Log;
-import de.dotwee.micropinner.database.PinDatabase;
-import de.dotwee.micropinner.database.PinSpec;
 import de.dotwee.micropinner.tools.NotificationTools;
+import de.dotwee.micropinner.view.MainDialog;
 
 public class OnBootReceiver
  extends BroadcastReceiver
@@ -24,22 +26,16 @@ public void onReceive(@NonNull Context context, @Nullable Intent intent)
        "Intent (and its action) must be not null to work with it, returning without work");
       return;
    }
-   
    if(!intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-      Log.w(TAG, "OnBootReceiver's intent actions is not " + Intent.ACTION_BOOT_COMPLETED +
-                  ", returning without work");
+      Log.w(TAG, "OnBootReceiver's intent action is not BOOT_COMPLETED, returning without work");
       return;
    }
    
-   // get all pins
-   final Map<Integer, PinSpec> pinMap = PinDatabase.getInstance(context).getAllPinsMap();
-   
-   // foreach through them all
-   for(Map.Entry<Integer, PinSpec> entry : pinMap.entrySet()) {
-      PinSpec pin = entry.getValue();
-      
-      // create a notification from the object and finally restore it
-      NotificationTools.notify(context, pin);
+   if(VERSION.SDK_INT < VERSION_CODES.M || // MARSHMALLOW == 23
+       PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
+        context, MainDialog.POST_NOTIFICATIONS)) {
+      MainDialog.hasPermission = true;
+      NotificationTools.restoreAllPins(context);
    }
 }
 }

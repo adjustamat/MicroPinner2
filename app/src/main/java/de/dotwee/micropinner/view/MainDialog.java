@@ -5,9 +5,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
+import android.Manifest.permission;
 import android.content.Context;
-import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -16,10 +20,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 import de.dotwee.micropinner.R;
-import de.dotwee.micropinner.database.PinSpec.Data;
 import de.dotwee.micropinner.presenter.MainPresenter;
-import de.dotwee.micropinner.receiver.OnBootReceiver;
+import de.dotwee.micropinner.tools.NotificationTools;
 import de.dotwee.micropinner.view.custom.DialogContentView;
 import de.dotwee.micropinner.view.custom.DialogFooterView;
 import de.dotwee.micropinner.view.custom.DialogHeaderView;
@@ -29,10 +33,17 @@ import de.dotwee.micropinner.view.custom.DialogHeaderView;
  */
 public class MainDialog
  extends AppCompatActivity
- implements Data
 {
+public static final String POST_NOTIFICATIONS;
+public static boolean hasPermission = false;
 
 static {
+   if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+      POST_NOTIFICATIONS = permission.POST_NOTIFICATIONS;
+   }
+   else {
+      POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+   }
    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 }
 
@@ -70,8 +81,37 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    // restore previous state
    mainPresenter.restore();
    
-   // simulate device-boot by sending a new intent to class OnBootReceiver
-   sendBroadcast(new Intent(this, OnBootReceiver.class));
+   if(VERSION.SDK_INT >= VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
+       PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
+        this, POST_NOTIFICATIONS)) {
+      if(shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
+         Toast.makeText(this, R.string.requires_your_permission, Toast.LENGTH_SHORT)
+          .show();
+      }
+      requestPermissions(new String[] {POST_NOTIFICATIONS}, 1);
+   }
+   else {
+      hasPermission = true;
+      NotificationTools.restoreAllPins(this);
+//   // simulate device-boot by sending a fake BOOT_COMPLETED intent to OnBootReceiver
+//   sendBroadcast(new Intent("fake." + Intent.ACTION_BOOT_COMPLETED, null,
+//    this, OnBootReceiver.class));
+   }
+}
+
+@Override
+public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+ @NonNull int[] grantResults)
+{
+   super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+   
+   for(int i = 0; i < permissions.length; i++) {
+      if(grantResults[i] == PackageManager.PERMISSION_GRANTED &&
+          permissions[i].equals(permission.POST_NOTIFICATIONS)) {
+         hasPermission = true;
+         NotificationTools.restoreAllPins(this);
+      }
+   }
 }
 
 @Override
@@ -94,7 +134,6 @@ public void setContentView(@LayoutRes int layoutResID)
  * This method reads the value of the visibility spinner widget.
  * @return Value of the content visibility spinner widget.
  */
-@Override
 public Integer getVisibility()
 {
    Spinner spinner = findViewById(R.id.spinnerVisibility);
@@ -109,7 +148,6 @@ public Integer getVisibility()
  * This method reads the value of the priority spinner widget.
  * @return Value of the content priority spinner widget.
  */
-@Override
 public Integer getPriority()
 {
    Spinner spinner = findViewById(R.id.spinnerPriority);
@@ -124,7 +162,6 @@ public Integer getPriority()
  * This method reads the value of the title editText widget.
  * @return Value of the content title widget.
  */
-@Override
 public String getPinTitle()
 {
    EditText editText = findViewById(R.id.editTextTitle);
@@ -139,7 +176,6 @@ public String getPinTitle()
  * This method reads the value of the content editText widget.
  * @return Value of the content editText widget.
  */
-@Override
 public String getPinContent()
 {
    EditText editText = findViewById(R.id.editTextContent);
@@ -154,7 +190,6 @@ public String getPinContent()
  * This method reads the state of the persistent checkbox widget.
  * @return State of the persistent checkbox.
  */
-@Override
 public boolean isPersistent()
 {
    CheckBox checkBox = findViewById(R.id.checkBoxPersistentPin);
@@ -165,7 +200,6 @@ public boolean isPersistent()
  * This method reads the state of the show-actions checkbox widget.
  * @return State of the show-actions checkbox.
  */
-@Override
 public boolean showActions()
 {
    CheckBox checkBox = findViewById(R.id.checkBoxShowActions);
