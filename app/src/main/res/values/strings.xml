@@ -2,27 +2,23 @@
 <resources>
    <string name="app_name">MicroPinner</string>
 
-   <string name="main_name">New Pin</string>
-   <string name="edit_name">Edit Pin</string>
+   <string name="title_new_pin">New Pin</string>
+   <string name="title_edit_pin">Edit Pin</string>
 
    <string name="input_description_priority">Priority</string>
-   <string name="input_description_visibility">Visibility</string>
-
-   <string name="input_description_makepinpersistent">Make pin persistent</string>
+<!--   <string name="input_description_visibility">Visibility</string>-->
+<!--   <string name="input_description_makepinpersistent">Make pin persistent</string>-->
    <string name="input_description_shownotificationactions">Show notification actions</string>
 
    <string name="dialog_action_pin">Pin</string>
    <string name="dialog_action_cancel">Cancel</string>
    <string name="dialog_action_delete">Delete</string>
 
-   <string name="input_hint_title">Title</string>
-   <string name="input_hint_content">Content</string>
+   <string name="txtTitleAndContent">Title\nand text content</string>
 
    <string name="message_clipped_pin">Pin has been copied to clipboard.</string>
    <string name="message_empty_title">The title has to contain text.</string>
    <string name="message_save_to_clipboard">Save to clipboard</string>
-
-   <string name="noti_chan_name">Pins (%s %s)</string>
 
    <string name="visibility_public">public</string>
    <string name="visibility_private">private</string>
@@ -32,5 +28,6 @@
    <string name="priority_low">low</string>
    <string name="priority_high">high</string>
    <string name="priority_default">default</string>
+
    <string name="requires_your_permission">MicroPinner requires your permission</string>
 </resources>

@@ -10,7 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import de.dotwee.micropinner.view.MainDialog;
+import de.dotwee.micropinner.MainActivity;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,8 +27,8 @@ public class PreferencesHandlerTest
  * activity to be launched before each test
  */
 @Rule
-public ActivityTestRule<MainDialog> activityTestRule =
- new ActivityTestRule<>(MainDialog.class);
+public ActivityTestRule<MainActivity> activityTestRule =
+ new ActivityTestRule<>(MainActivity.class);
 
 private PreferencesHandler preferencesHandler;
 

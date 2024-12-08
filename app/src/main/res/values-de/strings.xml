@@ -2,26 +2,23 @@
 <resources>
    <string name="app_name">MicroPinner</string>
 
-   <string name="main_name">Neuer Stift</string>
-   <string name="edit_name">Bearbeite Stift</string>
+   <string name="title_new_pin">Neuer Stift</string>
+   <string name="title_edit_pin">Bearbeite Stift</string>
 
    <string name="input_description_priority">Priorität</string>
-   <string name="input_description_visibility">Sichtbarkeit</string>
-
-   <string name="input_description_makepinpersistent">Mache stift permanent</string>
+<!--   <string name="input_description_visibility">Sichtbarkeit</string>-->
+<!--   <string name="input_description_makepinpersistent">Mache stift permanent</string>-->
+   <string name="input_description_shownotificationactions">Zeige Benachrichtigungs-Actions</string>
 
    <string name="dialog_action_pin">Heft</string>
    <string name="dialog_action_cancel">Abbrechen</string>
    <string name="dialog_action_delete">Entfernen</string>
 
-   <string name="input_hint_title">Titel</string>
-   <string name="input_hint_content">Inhalt</string>
+   <string name="txtTitleAndContent">Titel\nund textinhalt</string>
 
    <string name="message_clipped_pin">Pin wurde in die Zwischenablage kopiert.</string>
    <string name="message_empty_title">Du musst einen Titel eingeben.</string>
    <string name="message_save_to_clipboard">In die Zwischenablage kopieren</string>
-
-   <string name="noti_chan_name">Stifte (%s %s)</string>
 
    <string name="visibility_public">Normal</string>
    <string name="visibility_private">Privat</string>
@@ -31,6 +28,6 @@
    <string name="priority_low">Niedrig</string>
    <string name="priority_high">Hoch</string>
    <string name="priority_default">Normal</string>
-   <string name="input_description_shownotificationactions">Zeige Benachrichtigungs-Actions</string>
+
    <string name="requires_your_permission">MicroPinner braucht Ihre Erlaubnis</string>
 </resources>

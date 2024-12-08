@@ -17,7 +17,7 @@ private static final String DBG = "AutocloseReceiver";
 public void onReceive(@NonNull Context context, @NonNull Intent intent)
 {
    // deserialize our pin from the intent
-   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_INTENT);
+   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_PIN_SPEC);
    if(pin == null) {
       Log.d(DBG, "Intent did not contain a pin as serialized extra! " + intent);
       return;

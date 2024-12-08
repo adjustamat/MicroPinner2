@@ -28,13 +28,13 @@ public void onReceive(@NonNull Context context, @NonNull Intent intent)
 {
    
    // deserialize our pin from the intent
-   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_INTENT);
+   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_PIN_SPEC);
    
    if(pin != null) {
       Log.i(TAG, "Received deleteIntent from pin " + pin.getId());
       
       // and tell the pin handler to remove it from the index
-      PinDatabase.getInstance(context).deletePin(pin);
+      PinDatabase.getInstance(context).deletePin(pin.getId());
    }
    else {
       throw new IllegalArgumentException(

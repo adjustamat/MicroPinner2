@@ -12,7 +12,6 @@ import android.preference.PreferenceManager;
 public class PreferencesHandler
 {
 private static final String PREF_FIRST_USE = "pref_firstuse";
-private static final String PREF_ADVANCED_USE = "pref_advanceduse";
 private static final String PREF_SHOW_NOTIFICATION_ACTIONS = "pref_shownotificationactions";
 
 private static PreferencesHandler instance;
@@ -44,16 +43,6 @@ public boolean isFirstUse()
    return ret;
 }
 
-public boolean isAdvancedUsed()
-{
-   return preferences.getBoolean(PREF_ADVANCED_USE, false);
-}
-
-public void setAdvancedUse(boolean b)
-{
-   applyPreference(PREF_ADVANCED_USE, b);
-}
-
 public boolean isNotificationActionsEnabled()
 {
    return preferences.getBoolean(PREF_SHOW_NOTIFICATION_ACTIONS, false);
@@ -61,11 +50,6 @@ public boolean isNotificationActionsEnabled()
 
 public void setNotificationActionsEnabled(boolean b)
 {
-   applyPreference(PREF_SHOW_NOTIFICATION_ACTIONS, b);
-}
-
-private void applyPreference(@NonNull String key, boolean state)
-{
-   preferences.edit().putBoolean(key, state).apply();
+   preferences.edit().putBoolean(PREF_SHOW_NOTIFICATION_ACTIONS, b).apply();
 }
 }

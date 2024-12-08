@@ -12,15 +12,12 @@
     android:label="@string/app_name"
     >
 
-      <activity android:name=".view.MainDialog"
-       android:excludeFromRecents="true"
+      <activity android:name=".MainActivity"
        android:exported="true"
-       android:label="@string/main_name"
-       android:theme="@style/DialogTheme"
+       android:theme="@style/Theme_MicroPinner3"
        >
          <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
-
             <category android:name="android.intent.category.LAUNCHER"/>
          </intent-filter>
       </activity>
@@ -38,6 +35,6 @@
             <action android:name="android.intent.action.BOOT_COMPLETED"/>
          </intent-filter>
       </receiver>
-   </application>
 
+   </application>
 </manifest>

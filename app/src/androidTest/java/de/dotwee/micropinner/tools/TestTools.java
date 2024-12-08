@@ -2,7 +2,7 @@ package de.dotwee.micropinner.tools;
 
 import android.support.test.rule.ActivityTestRule;
 
-import de.dotwee.micropinner.view.MainDialog;
+import de.dotwee.micropinner.MainActivity;
 
 /**
  * Created by lukas on 20.07.2016.
@@ -18,7 +18,7 @@ public final class TestTools
  * @return An instance of {@link PreferencesHandler}
  */
 public static PreferencesHandler getPreferencesHandler(
- ActivityTestRule<MainDialog> activityTestRule)
+ ActivityTestRule<MainActivity> activityTestRule)
 {
    return PreferencesHandler.getInstance(activityTestRule.getActivity());
 }
@@ -29,7 +29,7 @@ public static PreferencesHandler getPreferencesHandler(
  * @param activityTestRule
  *  Source to get access to the activity.
  */
-public static void recreateActivity(final ActivityTestRule<MainDialog> activityTestRule)
+public static void recreateActivity(final ActivityTestRule<MainActivity> activityTestRule)
 {
    activityTestRule.getActivity().runOnUiThread(() -> activityTestRule.getActivity().recreate());
 }

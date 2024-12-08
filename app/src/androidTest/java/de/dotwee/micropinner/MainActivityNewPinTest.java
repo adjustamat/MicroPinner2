@@ -1,4 +1,4 @@
-package de.dotwee.micropinner.view;
+package de.dotwee.micropinner;
 
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -7,7 +7,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import de.dotwee.micropinner.R;
 import de.dotwee.micropinner.database.PinDatabase;
 import de.dotwee.micropinner.tools.PreferencesHandler;
 
@@ -37,16 +36,16 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class MainDialogNewPinTest
+public class MainActivityNewPinTest
 {
-private static final String LOG_TAG = "MainDialogNewPinTest";
+private static final String LOG_TAG = "MainActivityNewPinTest";
 /**
  * Preferred JUnit 4 mechanism of specifying the
  * activity to be launched before each test
  */
 @Rule
-public ActivityTestRule<MainDialog> activityTestRule =
- new ActivityTestRule<>(MainDialog.class);
+public ActivityTestRule<MainActivity> activityTestRule =
+ new ActivityTestRule<>(MainActivity.class);
 
 /**
  * This method verifies the advanced-switch's functionality.
@@ -100,7 +99,7 @@ public void testEditTextContent()
 {
    final String value = "MicroPinner title input";
    
-   onView(withId(R.id.editTextContent)).perform(typeText(value)).check(matches(withText(value)));
+   onView(withId(R.id.txtTitleAndContent)).perform(typeText(value)).check(matches(withText(value)));
 }
 
 /**
@@ -142,7 +141,7 @@ public void testExpandMechanismThroughSwitch()
    
    // CheckBoxes should be not visible
    onView(withId(R.id.checkBoxPersistentPin)).check(matches(not(isDisplayed())));
-   onView(withId(R.id.checkBoxShowActions)).check(matches(not(isDisplayed())));
+   onView(withId(R.id.chkShowActions)).check(matches(not(isDisplayed())));
 }
 
 /**
@@ -163,7 +162,7 @@ public void testExpandMechanismThroughHeader()
    
    // CheckBoxes should be not visible
    onView(withId(R.id.checkBoxPersistentPin)).check(matches(not(isDisplayed())));
-   onView(withId(R.id.checkBoxShowActions)).check(matches(not(isDisplayed())));
+   onView(withId(R.id.chkShowActions)).check(matches(not(isDisplayed())));
 }
 
 /**
@@ -198,10 +197,10 @@ public void testUserCreateNewPin()
    onView(withId(R.id.editTextTitle)).perform(typeText(LOG_TAG));
    
    // mark with high priority
-   onView(withId(R.id.spinnerPriority)).perform(click());
+   onView(withId(R.id.spinPriority)).perform(click());
    String highPriority = activityTestRule.getActivity().getString(R.string.priority_high);
    onData(allOf(is(instanceOf(String.class)), is(highPriority))).perform(click());
-   onView(withId(R.id.spinnerPriority)).check(matches(withSpinnerText(R.string.priority_high)));
+   onView(withId(R.id.spinPriority)).check(matches(withSpinnerText(R.string.priority_high)));
    
    // mark with private visibility
    onView(withId(R.id.spinnerVisibility)).perform(click());

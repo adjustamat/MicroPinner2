@@ -18,27 +18,25 @@ import de.dotwee.micropinner.database.PinDatabase;
 import de.dotwee.micropinner.database.PinSpec;
 import de.dotwee.micropinner.receiver.OnCancelReceiver;
 import de.dotwee.micropinner.receiver.OnClipReceiver;
-import de.dotwee.micropinner.view.MainDialog;
-import de.dotwee.micropinner.view.custom.DialogContentView;
+import de.dotwee.micropinner.MainActivity;
 
 /**
  * Created by lukas on 10.08.2016.
  */
 public class NotificationTools
 {
-public final static String EXTRA_INTENT = "IAMAPIN";
+public final static String EXTRA_PIN_SPEC = "IAMAPIN";
 
-private static final String CHANNEL_ID = "chan_id_";
 private static final String TAG = NotificationTools.class.getSimpleName();
 
 @NonNull
 private static PendingIntent getEditorIntent(@NonNull Context context, @NonNull PinSpec pin)
 {
-   // intent for starting Activity MainDialog (edit the pin)
-   Intent resultIntent = new Intent(context, MainDialog.class);
-   resultIntent.putExtra(EXTRA_INTENT, pin);
+   // intent for starting Activity MainActivity (edit the pin)
+   Intent resultIntent = new Intent(context, MainActivity.class);
+   resultIntent.putExtra(EXTRA_PIN_SPEC, pin);
    resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-   return PendingIntent.getActivity(context, pin.getIdAsInt(), resultIntent,
+   return PendingIntent.getActivity(context, 0, resultIntent,
     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 }
 
@@ -47,7 +45,7 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
    NotificationManager notificationManager =
     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
    
-   if(!MainDialog.hasPermission) {
+   if(!MainActivity.hasPermission) {
       Toast.makeText(context, R.string.requires_your_permission, Toast.LENGTH_LONG).show();
       return;
    }
@@ -58,18 +56,16 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
    }
    
    @SuppressLint("WrongConstant") NotificationCompat.Builder builder =
-    new NotificationCompat.Builder(context,
-     CHANNEL_ID + pin.getPriorityIndex() + pin.getVisibilityIndex())
-     
+    new NotificationCompat.Builder(context, pin.getNotificationChannelID())
      .setShowWhen(false)
      .setSilent(true)
      .setOnlyAlertOnce(true)
      .setAutoCancel(false)
      .setCategory(Notification.CATEGORY_STATUS)
      .setPriority(pin.getPreOreoPriority())
-     .setVisibility(pin.getVisibility())
+//     .setVisibility(pin.getVisibility())
      // .setPublicVersion()
-     .setOngoing(pin.isPersistent())
+     .setOngoing(true)
      
      .setContentTitle(pin.getTitle())
      .setSmallIcon(R.drawable.ic_notif_star)
@@ -82,7 +78,7 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
      .setDeleteIntent(PendingIntent.getBroadcast(context, pin.getIdAsInt(),
       new Intent(context, OnCancelReceiver.class)
        .setAction("notification_cancelled")
-       .putExtra(EXTRA_INTENT, pin),
+       .putExtra(EXTRA_PIN_SPEC, pin),
       PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE))
     //
     ;
@@ -92,30 +88,29 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
        context.getString(R.string.message_save_to_clipboard),
        PendingIntent.getBroadcast(context, pin.getIdAsInt(),
         new Intent(context, OnClipReceiver.class)
-         .putExtra(EXTRA_INTENT, pin),
+         .putExtra(EXTRA_PIN_SPEC, pin),
         PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE));
    }
    
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // OREO == 26
       // Create or update NotificationChannel
-      String channelName = context.getString(R.string.noti_chan_name,
-       DialogContentView.getPriorityAdapter(context, null)
-        .getItem(pin.getPriorityIndex()),
-       DialogContentView.getVisibilityAdapter(context, null)
-        .getItem(pin.getVisibilityIndex())
+      String channelName = pin.getNotificationChannelName(
+       MainActivity.getPriorityLocalizedStrings(context)
       );
+      
       NotificationChannel channel = new NotificationChannel(
-       CHANNEL_ID + pin.getPriorityIndex() + pin.getVisibilityIndex(),
+       pin.getNotificationChannelID(),
        channelName,
        pin.getImportance()
       );
+      channel.setSound(null,null);
       notificationManager.createNotificationChannel(channel);
    }
    
-   Log.i(TAG, "Send notification with pin id " + pin.getIdAsInt() + " to system");
+   Log.i(TAG, "Send notification with pin id " + pin.getId() + " to system");
    
    Notification notification = builder.build();
-   // only delete noti with delete button in MainDialog!
+   // only delete noti with delete button in MainActivity!
    /*
     * Bit to be bitswised-ored into the {@link #flags} field that should be
     * set by the system if this notification is not dismissible.

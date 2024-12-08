@@ -10,8 +10,8 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
+import de.dotwee.micropinner.MainActivity;
 import de.dotwee.micropinner.tools.NotificationTools;
-import de.dotwee.micropinner.view.MainDialog;
 
 public class OnBootReceiver
  extends BroadcastReceiver
@@ -33,8 +33,8 @@ public void onReceive(@NonNull Context context, @Nullable Intent intent)
    
    if(VERSION.SDK_INT < VERSION_CODES.M || // MARSHMALLOW == 23
        PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
-        context, MainDialog.POST_NOTIFICATIONS)) {
-      MainDialog.hasPermission = true;
+        context, MainActivity.PERMISSION_POST_NOTI)) {
+      MainActivity.hasPermission = true;
       NotificationTools.restoreAllPins(context);
    }
 }

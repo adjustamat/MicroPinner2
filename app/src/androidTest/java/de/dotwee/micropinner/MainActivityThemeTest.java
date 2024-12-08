@@ -1,4 +1,4 @@
-package de.dotwee.micropinner.view;
+package de.dotwee.micropinner;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -7,7 +7,6 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import de.dotwee.micropinner.R;
 import de.dotwee.micropinner.tools.Matches;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,7 +22,7 @@ import static de.dotwee.micropinner.tools.TestTools.recreateActivity;
  * Created by Lukas Wolfsteiner on 06.11.2015.
  */
 @RunWith(AndroidJUnit4.class)
-public class MainDialogThemeTest
+public class MainActivityThemeTest
 {
 
 /**
@@ -31,12 +30,12 @@ public class MainDialogThemeTest
  * activity to be launched before each test
  */
 @Rule
-public ActivityTestRule<MainDialog> activityTestRule =
- new ActivityTestRule<>(MainDialog.class);
+public ActivityTestRule<MainActivity> activityTestRule =
+ new ActivityTestRule<>(MainActivity.class);
 
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @ColorInt
-private static int getAccentColor(@NonNull ActivityTestRule<MainDialog> activityTestRule,
+private static int getAccentColor(@NonNull ActivityTestRule<MainActivity> activityTestRule,
  boolean light)
 {
    Configuration configuration = new Configuration();
@@ -48,7 +47,7 @@ private static int getAccentColor(@NonNull ActivityTestRule<MainDialog> activity
 
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @ColorInt
-private static int getBackgroundColor(@NonNull ActivityTestRule<MainDialog> activityTestRule,
+private static int getBackgroundColor(@NonNull ActivityTestRule<MainActivity> activityTestRule,
  boolean light)
 {
    Configuration configuration = new Configuration();
@@ -58,7 +57,7 @@ private static int getBackgroundColor(@NonNull ActivityTestRule<MainDialog> acti
     activityTestRule.getActivity().createConfigurationContext(configuration), R.color.background);
 }
 
-private static void changeUiMode(@NonNull ActivityTestRule<MainDialog> activityTestRule, int mode)
+private static void changeUiMode(@NonNull ActivityTestRule<MainActivity> activityTestRule, int mode)
 {
    activityTestRule.getActivity()
     .runOnUiThread(() -> activityTestRule.getActivity().getDelegate().setLocalNightMode(mode));
@@ -85,7 +84,7 @@ public void testThemeLightAccent()
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_hint_title, R.string.input_hint_content,
+    R.string.input_hint_title, R.string.txtTitleAndContent,
     R.string.input_description_priority, R.string.input_description_visibility
    }) {
       onView(withText(description)).check(
@@ -119,7 +118,7 @@ public void testThemeDarkAccent()
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_hint_title, R.string.input_hint_content,
+    R.string.input_hint_title, R.string.txtTitleAndContent,
     R.string.input_description_priority, R.string.input_description_visibility
    }) {
       onView(withText(description)).check(matches(Matches.withTextColor(

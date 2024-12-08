@@ -1,4 +1,4 @@
-package de.dotwee.micropinner.view;
+package de.dotwee.micropinner;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
@@ -14,8 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import de.dotwee.micropinner.Constants;
-import de.dotwee.micropinner.R;
 import de.dotwee.micropinner.tools.NotificationTools;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -30,23 +28,23 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
-public class MainDialogParentPinTest
+public class MainActivityEditPinTest
 {
 /**
  * Preferred JUnit 4 mechanism of specifying the
  * activity to be launched before each test
  */
 @Rule
-public ActivityTestRule<MainDialog> activityTestRule =
- new ActivityTestRule<>(MainDialog.class);
+public ActivityTestRule<MainActivity> activityTestRule =
+ new ActivityTestRule<>(MainActivity.class);
 
 @Before
 public void setUp()
 {
    
    final Intent testIntent =
-    new Intent(activityTestRule.getActivity(), MainDialog.class).putExtra(
-     NotificationTools.EXTRA_INTENT, Constants.testPin);
+    new Intent(activityTestRule.getActivity(), MainActivity.class).putExtra(
+     NotificationTools.EXTRA_PIN_SPEC, TestData.testPins);
    
    Intents.init();
    activityTestRule.launchActivity(testIntent);
@@ -61,7 +59,7 @@ public void testDialogTitle()
 {
    
    // verify changed dialog title
-   onView(ViewMatchers.withId(R.id.dialogTitle)).check(matches(withText(R.string.edit_name)));
+   onView(ViewMatchers.withId(R.id.dialogTitle)).check(matches(withText(R.string.title_edit_pin)));
 }
 
 @Test
@@ -79,7 +77,7 @@ public void testPinTitle()
 {
    
    // verify pin title
-   onView(withId(R.id.editTextTitle)).check(matches(withText(Constants.testPinTitle)));
+   onView(withId(R.id.editTextTitle)).check(matches(withText(TestData.testPinTitle)));
 }
 
 @Test
@@ -88,7 +86,7 @@ public void testPinContent()
 {
    
    // verify pin content
-   onView(withId(R.id.editTextContent)).check(matches(withText(Constants.testPinContent)));
+   onView(withId(R.id.txtTitleAndContent)).check(matches(withText(TestData.testPinContent)));
 }
 
 /**
@@ -101,7 +99,7 @@ public void testPinPriority()
 {
    
    // verify selected priority
-   onView(withId(R.id.spinnerPriority)).check(matches(withSpinnerText(R.string.priority_high)));
+   onView(withId(R.id.spinPriority)).check(matches(withSpinnerText(R.string.priority_high)));
 }
 
 /**

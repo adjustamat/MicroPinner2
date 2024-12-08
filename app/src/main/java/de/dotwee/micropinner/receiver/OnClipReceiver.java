@@ -34,7 +34,7 @@ private final static String TAG = OnClipReceiver.class.getSimpleName();
 public void onReceive(@NonNull Context context, @NonNull Intent intent)
 {
    
-   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_INTENT);
+   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_PIN_SPEC);
    
    if(pin != null) {
       Log.i(TAG, "Received clipIntent from pin " + pin.getId());

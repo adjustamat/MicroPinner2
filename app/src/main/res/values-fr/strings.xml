@@ -2,27 +2,23 @@
 <resources>
    <string name="app_name">MicroPinner</string>
 
-   <string name="main_name">Nouvelle Épingle</string>
-   <string name="edit_name">Éditer Épingle</string>
+   <string name="title_new_pin">Nouvelle Épingle</string>
+   <string name="title_edit_pin">Éditer Épingle</string>
 
    <string name="input_description_priority">Priorité</string>
-   <string name="input_description_visibility">Visibilité</string>
-
-   <string name="input_description_makepinpersistent">Épingle permanente</string>
+<!--   <string name="input_description_visibility">Visibilité</string>-->
+<!--   <string name="input_description_makepinpersistent">Épingle permanente</string>-->
    <string name="input_description_shownotificationactions">Afficher les actions de notification</string>
 
    <string name="dialog_action_pin">Épingler</string>
    <string name="dialog_action_cancel">Annuler</string>
    <string name="dialog_action_delete">Supprimer</string>
 
-   <string name="input_hint_title">Titre</string>
-   <string name="input_hint_content">Contenu</string>
+   <string name="txtTitleAndContent">Titre\net contenu texte</string>
 
    <string name="message_clipped_pin">L\'épingle a été copiée dans le presse-papiers.</string>
    <string name="message_empty_title">Le titre doit contenir du texte.</string>
    <string name="message_save_to_clipboard">Copier dans le presse-papiers</string>
-
-   <string name="noti_chan_name">Épingles (%s %s)</string>
 
    <string name="visibility_public">public</string>
    <string name="visibility_private">privé</string>
@@ -32,5 +28,6 @@
    <string name="priority_low">basse</string>
    <string name="priority_high">haute</string>
    <string name="priority_default">par défaut</string>
+
    <string name="requires_your_permission">MicroPinner demande votre permission</string>
 </resources>
