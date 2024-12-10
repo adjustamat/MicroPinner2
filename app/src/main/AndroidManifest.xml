@@ -20,6 +20,13 @@
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
          </intent-filter>
+         <intent-filter android:label="@string/title_new_pin">
+            <action android:name="android.intent.action.CREATE_NOTE"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+         </intent-filter>
+         <intent-filter android:label="@string/title_edit_pin">
+            <action android:name="android.intent.action.VIEW"/>
+         </intent-filter>
       </activity>
 
       <receiver android:name=".receiver.OnCancelReceiver"/>

@@ -14,8 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import de.dotwee.micropinner.tools.NotificationTools;
-
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
@@ -44,7 +42,7 @@ public void setUp()
    
    final Intent testIntent =
     new Intent(activityTestRule.getActivity(), MainActivity.class).putExtra(
-     NotificationTools.EXTRA_PIN_SPEC, TestData.testPins);
+     FragEditor.EXTRA_PIN_SPEC, TestData.testPins);
    
    Intents.init();
    activityTestRule.launchActivity(testIntent);
@@ -68,7 +66,7 @@ public void testDialogButtons()
 {
    
    // verify changed buttons
-   onView(withId(R.id.buttonCancel)).check(matches(withText(R.string.dialog_action_delete)));
+   onView(withId(R.id.buttonCancel)).check(matches(withText(R.string.action_delete)));
 }
 
 @Test

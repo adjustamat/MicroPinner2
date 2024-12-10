@@ -115,7 +115,7 @@ public void testEmptyTitleToast()
    onView(withId(R.id.editTextTitle)).perform(typeText(""));
    
    // click pin button
-   onView(withText(R.string.dialog_action_pin)).perform(click());
+   onView(withText(R.string.action_pin)).perform(click());
    
    // verify toast existence
    onView(withText(R.string.message_empty_title)).inRoot(

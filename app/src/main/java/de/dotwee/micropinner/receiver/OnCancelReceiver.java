@@ -5,8 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import de.dotwee.micropinner.FragEditor;
 import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.tools.NotificationTools;
+import de.dotwee.micropinner.NotificationTools;
 
 public class OnCancelReceiver
  extends BroadcastReceiver
@@ -17,7 +18,7 @@ private static final String DBG = "AutocloseReceiver";
 public void onReceive(@NonNull Context context, @NonNull Intent intent)
 {
    // deserialize our pin from the intent
-   PinSpec pin = (PinSpec) intent.getSerializableExtra(NotificationTools.EXTRA_PIN_SPEC);
+   PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
    if(pin == null) {
       Log.d(DBG, "Intent did not contain a pin as serialized extra! " + intent);
       return;

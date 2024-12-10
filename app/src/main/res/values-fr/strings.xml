@@ -6,13 +6,13 @@
    <string name="title_edit_pin">Éditer Épingle</string>
 
    <string name="input_description_priority">Priorité</string>
-<!--   <string name="input_description_visibility">Visibilité</string>-->
-<!--   <string name="input_description_makepinpersistent">Épingle permanente</string>-->
    <string name="input_description_shownotificationactions">Afficher les actions de notification</string>
 
-   <string name="dialog_action_pin">Épingler</string>
-   <string name="dialog_action_cancel">Annuler</string>
-   <string name="dialog_action_delete">Supprimer</string>
+   <string name="action_pin">Épingler</string>
+   <string name="action_cancel">Annuler</string>
+   <string name="action_delete">Supprimer</string>
+   <string name="action_delete_pins">Supprimer Épingles…</string>
+   <string name="action_order_pins">Classer Épingles…</string>
 
    <string name="txtTitleAndContent">Titre\net contenu texte</string>
 

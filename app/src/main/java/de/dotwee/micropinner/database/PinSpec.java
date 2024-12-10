@@ -20,6 +20,7 @@ private String content;
 
 private int priority;
 private int order;
+public Integer maxOrder = null;
 
 private boolean showActions;
 

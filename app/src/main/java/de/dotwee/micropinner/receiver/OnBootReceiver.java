@@ -11,7 +11,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
 import de.dotwee.micropinner.MainActivity;
-import de.dotwee.micropinner.tools.NotificationTools;
+import de.dotwee.micropinner.NotificationTools;
 
 public class OnBootReceiver
  extends BroadcastReceiver

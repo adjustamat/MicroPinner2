@@ -6,13 +6,13 @@
    <string name="title_edit_pin">Bearbeite Stift</string>
 
    <string name="input_description_priority">Priorität</string>
-<!--   <string name="input_description_visibility">Sichtbarkeit</string>-->
-<!--   <string name="input_description_makepinpersistent">Mache stift permanent</string>-->
    <string name="input_description_shownotificationactions">Zeige Benachrichtigungs-Actions</string>
 
-   <string name="dialog_action_pin">Heft</string>
-   <string name="dialog_action_cancel">Abbrechen</string>
-   <string name="dialog_action_delete">Entfernen</string>
+   <string name="action_pin">Heften</string>
+   <string name="action_cancel">Abbrechen</string>
+   <string name="action_delete">Entfernen</string>
+   <string name="action_delete_pins">Entfernen Stifte…</string>
+   <string name="action_order_pins">Sortieren Stifte…</string>
 
    <string name="txtTitleAndContent">Titel\nund textinhalt</string>
 

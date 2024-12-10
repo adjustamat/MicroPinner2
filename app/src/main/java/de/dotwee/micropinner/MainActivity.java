@@ -3,36 +3,26 @@ package de.dotwee.micropinner;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.TextView;
 import android.widget.Toast;
-import de.dotwee.micropinner.database.PinDatabase;
+import de.dotwee.micropinner.FragList.Mode;
 import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.tools.NotificationTools;
 import de.dotwee.micropinner.tools.PreferencesHandler;
 
 /**
@@ -41,16 +31,12 @@ import de.dotwee.micropinner.tools.PreferencesHandler;
 public class MainActivity
  extends AppCompatActivity
 {
+private static final String DBG = "MainActivity";
 public static final String PERMISSION_POST_NOTI;
 public static boolean hasPermission = false;
 
-private static final int displayLogo =
- ActionBar.DISPLAY_USE_LOGO | ActionBar.DISPLAY_SHOW_TITLE;
-private static final int displayDone =
- ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE;
-
 static {
-   if(VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) { // TIRAMISU == 33
+   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU == 33
       PERMISSION_POST_NOTI = permission.POST_NOTIFICATIONS;
    }
    else {
@@ -59,20 +45,56 @@ static {
    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 }
 
-private Fragment currentFrag;
-protected final List<Fragment> fragBackstack = new LinkedList<>();
+private final List<Frag> fragBackstack = new LinkedList<>();
 
-private  PreferencesHandler preferencesHandler;
-
-private  PinDatabase pinDatabase;
-
+@Override
+public void onBackPressed()
+{
+   onSupportNavigateUp();
+}
 
 @Override
 public boolean onSupportNavigateUp()
 {
+   if(fragBackstack.get(0).onUp())
+      return false;
    if(fragPopBack())
-      return true;
+      return false;
    return super.onSupportNavigateUp();
+}
+
+private boolean fragPopBack()
+{
+   if(fragBackstack.size() <= 1) {
+      return false;
+      // finish();
+   }
+   
+   Frag removed = fragBackstack.remove(0);
+   Frag current = fragBackstack.get(0);
+   getSupportFragmentManager().beginTransaction()
+    .replace(R.id.fragment, current)
+    .commit();
+   
+   invalidateActionBar(current);
+   
+   return true;
+}
+
+private void fragCommit(Frag frag)
+{
+   fragBackstack.add(0, frag);
+   getSupportFragmentManager().beginTransaction()
+    .replace(R.id.fragment, frag)
+    .commit();
+   
+   invalidateActionBar(frag);
+}
+
+void invalidateActionBar(Frag currentFrag)
+{
+   currentFrag.onPrepareActionBar(getSupportActionBar());
+   invalidateMenu();
 }
 
 /**
@@ -104,18 +126,15 @@ public boolean onSupportNavigateUp()
 @Override
 public boolean onCreateOptionsMenu(Menu menu)
 {
-   
-   boolean result = super.onCreateOptionsMenu(menu);
-//   // Using findViewById because NavigationView exists in different layout files
-//   // between w600dp and w1240dp
-//   NavigationView navView = findViewById(R.id.nav_view);
-//   if(navView == null) {
-//      // The navigation drawer already has the items including the items in the overflow menu
-//      // We only inflate the overflow menu if the navigation drawer isn't visible
-   getMenuInflater().inflate(R.menu.menu_navigation/*overflow*/, menu);
-//   }
-   return result;
-//}
+   getMenuInflater().inflate(R.menu.app_bar_buttons, menu);
+   return true;
+}
+
+@Override
+public boolean onPrepareOptionsMenu(Menu menu)
+{
+   fragBackstack.get(0).onPrepareMenu(menu);
+   return true;
 }
 
 /**
@@ -137,88 +156,79 @@ public boolean onCreateOptionsMenu(Menu menu)
 @Override
 public boolean onOptionsItemSelected(@NonNull MenuItem item)
 {
-   //public boolean onOptionsItemSelected(@NonNull MenuItem item)
+   int id = item.getItemId();
+   
+   if(id == R.id.btnCancel) {
+      onSupportNavigateUp();
+   }
+   else if(id == R.id.btnNew) {
+      showNewPin();
+   }
+   else if(id == R.id.btnDelete1) {
+      Frag frag = fragBackstack.get(0);
+      if(frag instanceof FragList) {
+         // TODO: delete all selected pins from database
+         
+         ((FragList) frag).setMode(Mode.NORMAL);
+      }
+      else {
+         // TODO: delete frag.editing from database
+///**
+// * This method handles the click on the negative dialog button.
+// */
+//public void onButtonNegative()
 //{
+//   if(hasParentPin()) {
+//      notificationManager.cancel(intentPin.getIdAsInt());
+//
+//      Intent intent = new Intent(activity, OnDeleteReceiver.class);
+//      intent.putExtra(NotificationTools.EXTRA_INTENT, intentPin);
+//      activity.sendBroadcast(intent);
+//   }
+//
+//   activity.finish();
+//}
+      }
+   }
+   else if(id == R.id.btnDeleteMode) {
+      FragList frag = (FragList) fragBackstack.get(0);
+      frag.setMode(Mode.DELETE);
+   }
+   else if(id == R.id.btnOrderMode) {
+      FragList frag = (FragList) fragBackstack.get(0);
+      frag.setMode(Mode.ORDER);
+   }
 //   if(item.getItemId() == R.id.nav_settings) {
 //      NavController navController =
 //       Navigation.findNavController(this, R.id.nav_host_fragment_content_responsive);
 //      navController.navigate(R.id.nav_settings);
 //   }
-//   return super.onOptionsItemSelected(item);
-//}
+   /*
+   
+public void onBtnNew()
+{
+   MainActivity activity = (MainActivity) requireActivity();
+   activity.showNewPin();
+}
+
+    */
    
    return super.onOptionsItemSelected(item);
 }
 
-private void fragCommit(Fragment frag)
+void showNewPin()
 {
-   fragBackstack.add(0, frag);
-   getSupportFragmentManager().beginTransaction()
-    .replace(R.id.fragment, frag)
-    .commit();
-   ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-   bar.setDisplayOptions(displayDone);
-   
-   
-/*
-TODO:
-android:id="@+id/buttonCancel"
-    android:text="@string/dialog_action_cancel"
-android:id="@+id/buttonPin"
-    android:text="@string/dialog_action_pin"
-    
-    icon = @mipmap/ic_launcher or checkmark
-    label = title_new_pin, title_edit_pin, app_name
-
- */
- 
+   fragCommit(FragEditor.getNewCreatingInstance());
 }
 
-private boolean fragPopBack()
+void showEditPin(PinSpec pin)
 {
-//      Log.d(DBG, "fragPopBack - backstack.size: " + fragBackstack.size());
-   if(fragBackstack.size() <= 1) {
-      return false; // Activity.finish()
-   }
-   
-   Fragment removed = fragBackstack.remove(0);
-   getSupportFragmentManager().beginTransaction()
-    .replace(R.id.fragment, fragBackstack.get(0))
-    .commit();
-   
-   if(fragBackstack.size() == 1) {
-      ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-      bar.setDisplayOptions(displayLogo);
-   }
-   
-   
-/*
-TODO:
-android:id="@+id/buttonCancel"
-    android:text="@string/dialog_action_cancel"
-android:id="@+id/buttonPin"
-    android:text="@string/dialog_action_pin"
-    
-    icon = @mipmap/ic_launcher or checkmark
-    label = title_new_pin, title_edit_pin, app_name
-
- */
-   
-   
-   return true;
+   fragCommit(FragEditor.getNewEditingInstance(pin));
 }
 
-/**
- * This method checks if the user's device is a tablet, depending on the official resource {@link
- * Configuration}.
- * @param context
- *  needed to get resources
- * @return true if device screen size is greater than 6 inches
- */
-private static boolean isTablet(@NonNull Context context)
+void showList()
 {
-   return (context.getResources().getConfiguration().screenLayout &
-            Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+   fragCommit(FragList.getNewInstance());
 }
 
 @Override
@@ -226,45 +236,72 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
 {
    super.onCreate(savedInstanceState);
    
-   preferencesHandler = PreferencesHandler.getInstance(this);
+   PreferencesHandler preferencesHandler = PreferencesHandler.getInstance(this);
    preferencesHandler.isFirstUse();
-   pinDatabase = PinDatabase.getInstance(getApplicationContext());
+   //PinDatabase.getInstance(getApplicationContext());
    
-   this.setContentView(R.layout.activity_main);
+   setContentView(R.layout.activity_main);
    
    ActionBar bar = Objects.requireNonNull(getSupportActionBar());
    bar.setHideOnContentScrollEnabled(true);
-   bar.setHomeAsUpIndicator(R.drawable.ic_done);
-   
-   fragCommit(new FragEditor());
-   
-   
+   bar.setDisplayShowTitleEnabled(true);
    
    // restore state
-   // TODO: getIntent();
+   Intent intent = getIntent();
    
-   if(preferencesHandler.isNotificationActionsEnabled()) {
-      CheckBox checkBox = activity.findViewById(R.id.chkShowActions);
-      checkBox.setChecked(true);
+   switch(intent.getAction()) {
+   case Intent.ACTION_CREATE_NOTE:
+      showNewPin();
+      break;
+   case Intent.ACTION_MAIN:
+      showList();
+      break;
+   default: // case Intent.ACTION_DEFAULT:
+      // deserialize our pin from the intent
+      PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
+      if(pin == null) {
+         showList();
+      }
+      else {
+         showEditPin(pin);
+      }
    }
-   
-   
-   
+
 //   TextView textViewTitle = activity.findViewById(R.id.dialogTitle);
 //   if(textViewTitle != null) {
 //      textViewTitle.setText(hasPin ? R.string.title_edit_pin : R.string.app_name);
 //   }
+
+/*
+TODO:
+android:id="@+id/buttonCancel"
+    android:text="@string/dialog_action_cancel"
+android:id="@+id/buttonPin"
+    android:text="@string/dialog_action_pin"
+    
+    icon = @mipmap/ic_launcher or checkmark
+    label = title_new_pin, title_edit_pin, app_name
+
+ */
    
-   Button buttonNegative = activity.findViewById(R.id.buttonCancel);
+   
+   
+   // TODO: move to FragEditor
+   if(preferencesHandler.isNotificationActionsEnabled()) {
+      CheckBox chkShowActions = findViewById(R.id.chkShowActions);
+      chkShowActions.setChecked(true);
+   }
+   
+   // TODO: according to state, show cancel button or delete button in FragEditor.
+   Button buttonNegative = findViewById(R.id.buttonCancel);
    if(buttonNegative != null) {
       buttonNegative.setText(
-       hasPin ? R.string.dialog_action_delete : R.string.dialog_action_cancel);
+       hasPin ? R.string.action_delete : R.string.action_cancel);
    }
    
    
    
-   
-   if(VERSION.SDK_INT >= VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
+   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
        PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
         this, PERMISSION_POST_NOTI)) {
       if(shouldShowRequestPermissionRationale(PERMISSION_POST_NOTI)) {
@@ -294,50 +331,6 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
    }
 }
 
-
-///**
-// * This method handles the click on the negative dialog button.
-// */
-//public void onButtonNegative()
-//{
-//   if(hasParentPin()) {
-//      notificationManager.cancel(intentPin.getIdAsInt());
-//
-//      Intent intent = new Intent(activity, OnDeleteReceiver.class);
-//      intent.putExtra(NotificationTools.EXTRA_INTENT, intentPin);
-//      activity.sendBroadcast(intent);
-//   }
-//
-//   activity.finish();
-//}
-
-/**
- * This method handles the click on the positive dialog button.
- */
-public void onButtonPositive()
-{
-   if(activity.getPinTitle().isEmpty()) {
-      Toast.makeText(activity, R.string.message_empty_title, Toast.LENGTH_SHORT).show();
-      Log.d(TAG, "user entered no title, can't finish pin.");
-      return;
-   }
-//   if(getParentPin() != null) {
-//
-//   }
-//   else {
-//
-//   }
-   PinSpec newPin = pinDatabase.writePin(getParentPin(),
-    activity.getPinTitle(), activity.getPinContent(),
-    activity.getPriority(), activity.showActions());
-   
-   NotificationTools.notify(activity, newPin);
-   
-   activity.finish();
-//   catch(Exception e) {
-//      Log.d(TAG, "onButtonPositive()", e);
-//   }
-}
 
 
 //@Override

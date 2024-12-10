@@ -1,112 +1,182 @@
 package de.dotwee.micropinner;
 
-import java.io.Serializable;
-import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.tools.NotificationTools;
 
-class FragEditor extends Fragment
+class FragEditor
+ extends Frag
 {
+public final static String EXTRA_PIN_SPEC = "IAMAPIN";
+private static final String DBG = "FragEditor";
 
+// TODO: is this field needed?
 private ArrayAdapter<String> priorityLocalizedStrings;
-private PinSpec intentPin;
 
-private FragEditor(){}
+// TODO: does this object have to be saved to instancestate somehow?
+private PinSpec editing = null;
 
-public static FragEditor getNewEditInstance(PinSpec editing){
-FragEditor ret=new FragEditor();
+private Spinner spinPriority;
+private EditText txtTitleAndContent;
+private CheckBox chkShowActions;
 
-return ret;
-}
-
-public static FragEditor getNewPinInstance(){
+public static FragEditor getNewEditingInstance(PinSpec editing)
+{
    FragEditor ret = new FragEditor();
-   
+   ret.editing = editing;
    return ret;
 }
 
-/**
- * This method checks if a parent pin exists.
- */
-public PinSpec getParentPin()
+public static FragEditor getNewCreatingInstance()
 {
-   if(intentPin != null)
-      return intentPin;
-   if(intent != null) {
-      Serializable extra = intent.getSerializableExtra(NotificationTools.EXTRA_PIN_SPEC);
-      if(extra instanceof PinSpec) {
-         return this.intentPin = (PinSpec) extra;
-      }
-   }
-   return this.intentPin = null;
+   return new FragEditor();
 }
 
-/**
- * This method reads the value of the title editText widget.
- * @return Value of the content title widget.
- */
-public String getPinTitle()
+private FragEditor()
 {
-   EditText editText = findViewById(R.id.editTextTitle);
-   if(editText != null) {
-      return editText.getText().toString();
-   }
+}
+
+@Override
+public boolean onUp()
+{
+   String titleAndContent = txtTitleAndContent.getText().toString();
    
-   return null;
-}
-
-/**
- * This method reads the value of the content editText widget.
- * @return Value of the content editText widget.
- */
-public String getPinContent()
-{
-   EditText editText = findViewById(R.id.txtTitleAndContent);
-   if(editText != null) {
-      return editText.getText().toString();
+   if(titleAndContent.isEmpty()) {
+      Toast.makeText(getContext(), R.string.message_empty_title, Toast.LENGTH_SHORT).show();
+      Log.d(DBG, "user entered no title, can't finish pin.");
+      return false;
    }
-   
-   return null;
-}
-
-/**
- * This method reads the value of the priority spinner widget.
- * @return Value of the content priority spinner widget.
- */
-public Integer getPriority()
-{
-   Spinner spinner = findViewById(R.id.spinPriority);
-   if(spinner != null) {
-      return spinner.getSelectedItemPosition();
+   String title;
+   String content;
+   int split = titleAndContent.indexOf('\n');
+   if(split < 0) {
+      title = titleAndContent;
+      content = "";
    }
+   else {
+      title = titleAndContent.substring(0, split);
+      content = titleAndContent.substring(split + 1);
+   }
+//   if(getParentPin() != null) {
+//
+//   }
+//   else {
+//
+//   }
    
-   return null;
+   
+   PinSpec newPin = pinDatabase.writePin(editing,
+    title, content,
+    spinPriority.getSelectedItemPosition(), chkShowActions.isChecked());
+   
+   NotificationTools.notify(activity, newPin);
+   
+   activity.finish();
+//   catch(Exception e) {
+//      Log.d(DBG, "onButtonPositive()", e);
+//   }
+   return false;
+}
+
+@Override
+public void onPrepareActionBar(ActionBar bar)
+{
+   bar.setHomeActionContentDescription(R.string.action_pin);
+   bar.setHomeAsUpIndicator(R.drawable.ic_done);
+   bar.setTitle(editing != null ? R.string.title_edit_pin : R.string.title_new_pin);
+   bar.setDisplayHomeAsUpEnabled(true);
+   bar.setDisplayUseLogoEnabled(false);
+   bar.setDisplayShowTitleEnabled(true);
+}
+
+@Override
+public void onPrepareMenu(Menu menu)
+{
+   // TODO: see my plan. (order)
+   MenuItem item;
+   item = menu.findItem(R.id.btnCancel);
+   item.setVisible(editing == null);
+   item.setEnabled(editing == null);
+   item = menu.findItem(R.id.btnDelete1);
+   item.setVisible(editing != null);
+   item.setEnabled(editing != null);
+   item = menu.findItem(R.id.btnDeleteMode);
+   item.setVisible(false);
+   item.setEnabled(false);
+   item = menu.findItem(R.id.btnOrderMode);
+   item.setVisible(false);
+   item.setEnabled(false);
+   item = menu.findItem(R.id.btnNew);
+   item.setVisible(false);
+   item.setEnabled(false);
 }
 
 /**
- * This method handles the click on the show-actions checkbox.
+ * Called to ask the fragment to save its current dynamic state, so it
+ * can later be reconstructed in a new instance if its process is
+ * restarted.  If a new instance of the fragment later needs to be
+ * created, the data you place in the Bundle here will be available
+ * in the Bundle given to {@link #onCreate(Bundle)},
+ * {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}, and
+ * {@link #onViewCreated(View, Bundle)}.
+ * @param outState
+ *  Bundle in which to place your saved state.
  */
-public void onShowActions()
+@Override
+public void onSaveInstanceState(@NonNull Bundle outState)
 {
-   CheckBox checkBox = activity.findViewById(R.id.chkShowActions);
-   preferencesHandler.setNotificationActionsEnabled(checkBox.isChecked());
+   super.onSaveInstanceState(outState);
+   outState.putSerializable(EXTRA_PIN_SPEC, editing);
 }
 
 /**
- * This method reads the state of the show-actions checkbox widget.
- * @return State of the show-actions checkbox.
+ * Called to have the fragment instantiate its user interface view.
+ *
+ * <p>It is recommended to <strong>only</strong> inflate the layout in this method and move
+ * logic that operates on the returned View to {@link #onViewCreated(View, Bundle)}.
+ *
+ * <p>If you return a View from here, you will later be called in
+ * {@link #onDestroyView} when the view is being released.
+ * @param inflater
+ *  The LayoutInflater object that can be used to inflate
+ *  any views in the fragment,
+ * @param container
+ *  If non-null, this is the parent view that the fragment's
+ *  UI should be attached to.  The fragment should not add the view itself,
+ *  but this can be used to generate the LayoutParams of the view.
+ * @param savedInstanceState
+ *  If non-null, this fragment is being re-constructed
+ *  from a previous saved state as given here.
+ * @return Return the View for the fragment's UI, or null.
  */
-public boolean getShowActions()
+@Override
+public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+ @Nullable Bundle savedInstanceState)
 {
-   CheckBox checkBox = findViewById(R.id.chkShowActions);
-   return checkBox != null && checkBox.isChecked();
+   if(savedInstanceState != null && editing == null) {
+      editing = (PinSpec) savedInstanceState.getSerializable(EXTRA_PIN_SPEC);
+   }
+   // TODO: store chk and txt and spinner in fields!
+   // TODO: make sure onShowActions() is called.
+   // TODO: init() ?_
+   return inflater.inflate(R.layout.frag_editor, container, false);
 }
 
-void init(){
+void init()
+{
    boolean hasPin = getParentPin() != null;
    EditText editText = findViewById(R.id.txtTitleAndContent);
    
@@ -118,18 +188,26 @@ void init(){
    
    
    if(hasPin) {
-      spinPriority.setSelection(intentPin.getPriorityIndex(), true);
+      spinPriority.setSelection(editing.getPriorityIndex(), true);
       
       if(editText != null) {
-         if(intentPin.getContent().isEmpty()) {
-            editText.setText(intentPin.getTitle());
+         if(editing.getContent().isEmpty()) {
+            editText.setText(editing.getTitle());
          }
          else {
-            editText.setText(intentPin.getTitle() + "\n" + intentPin.getContent());
+            editText.setText(editing.getTitle() + "\n" + editing.getContent());
          }
       }
    } // if(hasPin)
    
+}
+
+/**
+ * This method handles the click on the show-actions checkbox.
+ */
+public void onShowActions()
+{
+   preferencesHandler.setNotificationActionsEnabled(chkShowActions.isChecked());
 }
 
 public ArrayAdapter<String> getPriorityAdapter()

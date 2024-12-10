@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+ xmlns:app="http://schemas.android.com/apk/res-auto"
+ >
+   <item
+    android:id="@+id/btnNew"
+    android:title="@string/title_new_pin"
+    android:icon="@drawable/ic_new"
+
+    app:showAsAction="ifRoom"
+    />
+   <!--   <item-->
+   <!--    android:id="@+id/btnDone"-->
+   <!--    android:title="@string/action_done"-->
+   <!--    app:showAsAction="ifRoom"-->
+   <!--    android:icon="@drawable/ic_done"-->
+   <!--    />-->
+   <item
+    android:id="@+id/btnCancel"
+    android:title="@string/action_cancel"
+    android:icon="@drawable/ic_cancel"
+    app:showAsAction="ifRoom"
+    />
+   <item
+    android:id="@+id/btnDelete1"
+    android:title="@string/action_delete"
+    android:icon="@drawable/ic_delete"
+    app:showAsAction="ifRoom"
+    />
+   <item
+    android:id="@+id/btnDeleteMode"
+    android:title="@string/action_delete_pins"
+    android:icon="@drawable/ic_delete"
+    app:showAsAction="ifRoom"
+    />
+   <item
+    android:id="@+id/btnOrderMode"
+    android:title="@string/action_order_pins"
+    android:icon="@drawable/ic_arrows_up_down"
+    app:showAsAction="ifRoom"
+    />
+
+</menu>
