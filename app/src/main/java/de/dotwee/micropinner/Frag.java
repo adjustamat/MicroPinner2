@@ -9,5 +9,5 @@ abstract class Frag
 {
 public abstract void onPrepareMenu(Menu menu);
 public abstract void onPrepareActionBar(ActionBar bar);
-public abstract boolean onUp();
+public abstract boolean onUpMayFinish(boolean cancel);
 }

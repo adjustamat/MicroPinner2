@@ -1,14 +1,19 @@
 package de.dotwee.micropinner;
 
+import java.util.HashSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.view.ActionMode;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+import de.dotwee.micropinner.database.PinDatabase;
 import de.dotwee.micropinner.database.PinSpec;
 
 class FragList
@@ -25,39 +30,29 @@ private FragList()
 {
 }
 
+private ArrayAdapter<PinSpec> pins;
+private HashSet<PinSpec> selected;
+private MenuItem btnDelete1;
+private MenuItem btnDeleteMode;
+private MenuItem btnOrderMode;
+private MenuItem btnNew;
+ActionMode actionMode;
+
 enum Mode
 {
-   NORMAL(
-    true, true, false
-   ),
-   ORDER(
-    false, false, false
-   ),
-   DELETE(
-    false, false, true
-   );
-   private final boolean showOrderMode;
-   private final boolean showDeleteMode;
-   private final boolean showDelete1;
-   
-   Mode(boolean showOrderMode, boolean showDeleteMode, boolean showDelete1)
-   {
-      this.showOrderMode = showOrderMode;
-      this.showDeleteMode = showDeleteMode;
-      this.showDelete1 = showDelete1;
-   }
+   NORMAL, ORDER, DELETE
 }
 
 private Mode mode = Mode.NORMAL;
 
 @Override
-public boolean onUp()
+public boolean onUpMayFinish(boolean cancel)
 {
    if(mode != Mode.NORMAL) {
       setMode(Mode.NORMAL);
-      return true;
+      return false;
    }
-   return false;
+   return true;
 }
 
 void setMode(Mode mode)
@@ -97,6 +92,7 @@ public void onPrepareActionBar(ActionBar bar)
 @Override
 public void onPrepareMenu(Menu menu)
 {
+   boolean normal = mode == Mode.NORMAL;
    // TODO: see my plan. (order)
    MenuItem item;
    item = menu.findItem(R.id.btnCancel);
@@ -110,21 +106,26 @@ public void onPrepareMenu(Menu menu)
    item.setEnabled(mode == Mode.DELETE);
    
    item = menu.findItem(R.id.btnDeleteMode);
-   item.setVisible(mode == Mode.NORMAL);
+   item.setVisible(normal);
    
    // TODO: enabled if there are pins!
-   item.setEnabled(mode == Mode.NORMAL);
+   item.setEnabled(normal);
    
    item = menu.findItem(R.id.btnOrderMode);
-   item.setVisible(mode == Mode.NORMAL);
+   item.setVisible(normal);
    
    // TODO: enabled if there are pins that can be rearranged!
-   item.setEnabled(mode == Mode.NORMAL);
+   item.setEnabled(normal);
    
+   // hide btnNew if MAX_NOTIFICATIONS
+   int count = PinDatabase.getInstance(getContext()).getCount();
+   if(count >= PinDatabase.MAX_NOTIFICATIONS){
+      Toast.makeText(requireContext(), R.string.message_too_many, Toast.LENGTH_SHORT).show();
+   }
+   normal = normal && count >= PinDatabase.MAX_NOTIFICATIONS;
    item = menu.findItem(R.id.btnNew);
-   item.setVisible(mode == Mode.NORMAL);
-   item.setEnabled(mode == Mode.NORMAL);
-   
+   item.setVisible(normal);
+   item.setEnabled(normal);
    
 }
 
@@ -152,12 +153,52 @@ public void onPrepareMenu(Menu menu)
 public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
  @Nullable Bundle savedInstanceState)
 {
+   // TODO: setup clicking on recyclerview, and selecting for DELETE mode
    return inflater.inflate(R.layout.frag_list, container, false);
 }
 
 public void onClick(PinSpec pin)
+{/*
+TODO selection:
+build your KeyProvider (selection key type: Long)
+
+Implement ItemDetailsLookup (This will likely depend on RecyclerView.ViewHolder)
+
+In Adapter#onBindViewHolder, set the "activated" status on view.
+ Note that the status should be "activated" not "selected". See View.html#setActivated for details.
+Update the styling of the view to represent the activated status with a color state list.
+
+Use ActionMode when there is a selection
+Register a androidx.recyclerview.selection.SelectionTracker.SelectionObserver to be notified
+when selection changes. When a selection is first created, start ActionMode to represent this
+to the user, and provide selection specific actions.
+
+Assemble everything with SelectionTracker.Builder
+
+In order to preserve state, See SelectionTracker#onSaveInstanceState
+and SelectionTracker#onRestoreInstanceState
+*/
+   switch(mode) {
+   case NORMAL:
+      MainActivity activity = (MainActivity) requireActivity();
+      activity.showEditPin(pin);
+      break;
+   case DELETE:
+      if(pin.selected == null)
+         pin.selected = true;
+      else
+         pin.selected = null;
+      
+      break;
+   // case ORDER: // do nothing.
+   }
+   
+}
+
+public void deleteSelected()
 {
-   MainActivity activity = (MainActivity) requireActivity();
-   activity.showEditPin(pin);
+   // TODO: loop through adapter. reset pin.selected to null, and send those to PinDatabase.
+   
+   // PinDatabase.getInstance(context).deletePin(pin.getId());
 }
 }

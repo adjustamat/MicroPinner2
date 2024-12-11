@@ -18,8 +18,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.Toast;
 import de.dotwee.micropinner.FragList.Mode;
 import de.dotwee.micropinner.database.PinSpec;
@@ -50,35 +48,41 @@ private final List<Frag> fragBackstack = new LinkedList<>();
 @Override
 public void onBackPressed()
 {
-   onSupportNavigateUp();
+   if(onUpMayFinish(true))
+      finish();
 }
 
 @Override
 public boolean onSupportNavigateUp()
 {
-   if(fragBackstack.get(0).onUp())
-      return false;
-   if(fragPopBack())
+   if(!onUpMayFinish(false))
       return false;
    return super.onSupportNavigateUp();
 }
 
-private boolean fragPopBack()
+public boolean onUpMayFinish(boolean cancel)
+{
+   if(!fragBackstack.get(0).onUpMayFinish(cancel))
+      return false;
+   return fragPopMayFinish();
+}
+
+private boolean fragPopMayFinish()
 {
    if(fragBackstack.size() <= 1) {
-      return false;
+      return true;
       // finish();
    }
    
-   Frag removed = fragBackstack.remove(0);
+   // Frag removed =
+   fragBackstack.remove(0);
    Frag current = fragBackstack.get(0);
    getSupportFragmentManager().beginTransaction()
     .replace(R.id.fragment, current)
     .commit();
    
    invalidateActionBar(current);
-   
-   return true;
+   return false;
 }
 
 private void fragCommit(Frag frag)
@@ -159,7 +163,8 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
    int id = item.getItemId();
    
    if(id == R.id.btnCancel) {
-      onSupportNavigateUp();
+      if(onUpMayFinish(true))
+         finish();
    }
    else if(id == R.id.btnNew) {
       showNewPin();
@@ -167,12 +172,15 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
    else if(id == R.id.btnDelete1) {
       Frag frag = fragBackstack.get(0);
       if(frag instanceof FragList) {
+         FragList fragList = (FragList) frag;
          // TODO: delete all selected pins from database
-         
-         ((FragList) frag).setMode(Mode.NORMAL);
+         fragList.deleteSelected();
+        fragList.setMode(Mode.NORMAL);
       }
       else {
          // TODO: delete frag.editing from database
+         FragEditor fragEditor = (FragEditor) frag;
+         fragEditor.deletePin();
 ///**
 // * This method handles the click on the negative dialog button.
 // */
@@ -266,40 +274,6 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
          showEditPin(pin);
       }
    }
-
-//   TextView textViewTitle = activity.findViewById(R.id.dialogTitle);
-//   if(textViewTitle != null) {
-//      textViewTitle.setText(hasPin ? R.string.title_edit_pin : R.string.app_name);
-//   }
-
-/*
-TODO:
-android:id="@+id/buttonCancel"
-    android:text="@string/dialog_action_cancel"
-android:id="@+id/buttonPin"
-    android:text="@string/dialog_action_pin"
-    
-    icon = @mipmap/ic_launcher or checkmark
-    label = title_new_pin, title_edit_pin, app_name
-
- */
-   
-   
-   
-   // TODO: move to FragEditor
-   if(preferencesHandler.isNotificationActionsEnabled()) {
-      CheckBox chkShowActions = findViewById(R.id.chkShowActions);
-      chkShowActions.setChecked(true);
-   }
-   
-   // TODO: according to state, show cancel button or delete button in FragEditor.
-   Button buttonNegative = findViewById(R.id.buttonCancel);
-   if(buttonNegative != null) {
-      buttonNegative.setText(
-       hasPin ? R.string.action_delete : R.string.action_cancel);
-   }
-   
-   
    
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
        PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
@@ -331,8 +305,6 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
    }
 }
 
-
-
 //@Override
 //public void setContentView(@LayoutRes int layoutResID)
 //{
@@ -354,7 +326,4 @@ public static ArrayAdapter<String> getPriorityLocalizedStrings(Context ctx)
    return new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_item,
     ctx.getResources().getStringArray(R.array.array_priorities));
 }
-
 }
-
-

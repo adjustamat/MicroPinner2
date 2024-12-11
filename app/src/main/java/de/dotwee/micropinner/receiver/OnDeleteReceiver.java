@@ -33,7 +33,7 @@ public void onReceive(@NonNull Context context, @NonNull Intent intent)
    if(pin != null) {
       Log.i(TAG, "Received deleteIntent from pin " + pin.getId());
       
-      // and tell the pin handler to remove it from the index
+      // delete it from the database
       PinDatabase.getInstance(context).deletePin(pin.getId());
    }
    else {

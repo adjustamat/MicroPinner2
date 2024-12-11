@@ -5,8 +5,10 @@
    <string name="title_new_pin">Nouvelle Épingle</string>
    <string name="title_edit_pin">Éditer Épingle</string>
 
-   <string name="input_description_priority">Priorité</string>
-   <string name="input_description_shownotificationactions">Afficher les actions de notification</string>
+   <string name="txtTitleAndContent">Titre\net contenu texte</string>
+   <string name="spinPriority">Priorité</string>
+   <string name="chkShowActions">Afficher les actions de notification</string>
+   <string name="btnMoreSettings">Autres paramètres</string>
 
    <string name="action_pin">Épingler</string>
    <string name="action_cancel">Annuler</string>
@@ -14,11 +16,11 @@
    <string name="action_delete_pins">Supprimer Épingles…</string>
    <string name="action_order_pins">Classer Épingles…</string>
 
-   <string name="txtTitleAndContent">Titre\net contenu texte</string>
-
    <string name="message_clipped_pin">L\'épingle a été copiée dans le presse-papiers.</string>
-   <string name="message_empty_title">Le titre doit contenir du texte.</string>
    <string name="message_save_to_clipboard">Copier dans le presse-papiers</string>
+   <string name="message_empty_title">Le titre doit contenir du texte.</string>
+   <string name="message_too_many">MicroPinner peut afficher seulement 20 épingles (5 par Priorité)</string>
+   <string name="requires_your_permission">MicroPinner demande votre permission</string>
 
    <string name="visibility_public">public</string>
    <string name="visibility_private">privé</string>
@@ -28,6 +30,4 @@
    <string name="priority_low">basse</string>
    <string name="priority_high">haute</string>
    <string name="priority_default">par défaut</string>
-
-   <string name="requires_your_permission">MicroPinner demande votre permission</string>
 </resources>

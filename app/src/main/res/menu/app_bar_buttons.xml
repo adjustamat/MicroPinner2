@@ -3,41 +3,38 @@
  xmlns:app="http://schemas.android.com/apk/res-auto"
  >
    <item
-    android:id="@+id/btnNew"
-    android:title="@string/title_new_pin"
-    android:icon="@drawable/ic_new"
-
-    app:showAsAction="ifRoom"
-    />
-   <!--   <item-->
-   <!--    android:id="@+id/btnDone"-->
-   <!--    android:title="@string/action_done"-->
-   <!--    app:showAsAction="ifRoom"-->
-   <!--    android:icon="@drawable/ic_done"-->
-   <!--    />-->
-   <item
     android:id="@+id/btnCancel"
     android:title="@string/action_cancel"
     android:icon="@drawable/ic_cancel"
+    android:orderInCategory="1"
     app:showAsAction="ifRoom"
     />
    <item
     android:id="@+id/btnDelete1"
     android:title="@string/action_delete"
     android:icon="@drawable/ic_delete"
+    android:orderInCategory="2"
     app:showAsAction="ifRoom"
     />
    <item
     android:id="@+id/btnDeleteMode"
     android:title="@string/action_delete_pins"
     android:icon="@drawable/ic_delete"
+    android:orderInCategory="3"
     app:showAsAction="ifRoom"
     />
    <item
     android:id="@+id/btnOrderMode"
     android:title="@string/action_order_pins"
     android:icon="@drawable/ic_arrows_up_down"
+    android:orderInCategory="4"
     app:showAsAction="ifRoom"
     />
-
+   <item
+    android:id="@+id/btnNew"
+    android:title="@string/title_new_pin"
+    android:icon="@drawable/ic_new"
+    android:orderInCategory="5"
+    app:showAsAction="ifRoom"
+    />
 </menu>

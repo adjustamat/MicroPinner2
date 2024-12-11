@@ -19,6 +19,10 @@ public class PinDatabase
 {
 private static final String TAG = PinDatabase.class.getSimpleName();
 
+// maximums
+public static final int MAX_NOTIFICATIONS = 20;
+public static final int MAX_PER_PRIO = 5;
+
 // string columns
 private static final String COL_TITLE = "txt1";
 private static final String COL_CONTENT = "txt2";
@@ -103,20 +107,14 @@ public void changeOrderForPins(long id1, int order1, long id2, int order2)
     COL_ID + "=" + id2, null);
 }
 
-private static int getNewOrderValue(SQLiteDatabase sdb, int priorityIndex)
-{
-   return (int) DatabaseUtils.queryNumEntries(sdb, TABLE,
-    COL_PRIORITY + "=" + priorityIndex);
-}
-
 /**
  * This method decides whether a new pin should be created or updated in the database.
  * Either creates a pin within the database and gives it a unique id,
  * or updates a pin in the database without changing its id.
- * @param parentPin
+ * @param editing
  *  The pin that was edited, or null to create a new pin.
  */
-public PinSpec writePin(PinSpec parentPin,
+public PinSpec writePin(PinSpec editing,
  String title, String content, int priorityIndex, boolean showActions)
 {
    SQLiteDatabase sdb = getWritableDatabase();
@@ -127,11 +125,22 @@ public PinSpec writePin(PinSpec parentPin,
    contentValues.put(COL_PRIORITY, priorityIndex);
    contentValues.put(COL_SHOW_ACTIONS, showActions ? 1 : 0);
    
-   if(parentPin == null) {
+   if(editing == null) {
+      
+      // check if we can create new pin
+      int orderWithinPrio = (int) DatabaseUtils.queryNumEntries(sdb, TABLE,
+       COL_PRIORITY + "=" + priorityIndex);
+      int total = (int) DatabaseUtils.queryNumEntries(sdb, TABLE);
+      if(total >= MAX_NOTIFICATIONS || orderWithinPrio >= MAX_PER_PRIO) {
+         Log.i(TAG, "Cannot create new pin because there are " + orderWithinPrio +
+                     " pins with priority " + priorityIndex + ", and the total is " + total);
+         sdb.close();
+         return null;
+      }
       
       // create new pin
-      int orderWithinPrio = getNewOrderValue(sdb, priorityIndex);
       contentValues.put(COL_ORDER, orderWithinPrio);
+      // get new ID from the database
       long id = sdb.insert(TABLE, null, contentValues);
       Log.i(TAG, "Created new pin with id " + id);
       logRowCount(sdb);
@@ -139,10 +148,10 @@ public PinSpec writePin(PinSpec parentPin,
    }
    else {
       
-      // update existing pin
+      // update edited pin
       sdb.update(TABLE, contentValues,
-       COL_ID + "=" + parentPin.getId(), null);
-      ret = parentPin;
+       COL_ID + "=" + editing.getId(), null);
+      ret = editing;
       ret.setData(title, content, priorityIndex, showActions);
    }
    
@@ -159,8 +168,7 @@ public void deletePin(long id)
 {
    SQLiteDatabase sdb = getWritableDatabase();
    boolean success = sdb.delete(TABLE, COL_ID + "=" + id, null) > 0;
-   
-   Log.i(TAG, "Deleting pin with id " + id + "; success = " + success);
+   Log.i(TAG, "Deleted pin with id " + id + "; success = " + success);
    logRowCount(sdb);
    sdb.close();
 }
@@ -205,14 +213,21 @@ public List<PinSpec> getAllPins()
    return list;
 }
 
+public int getCount()
+{
+   SQLiteDatabase sdb = getReadableDatabase();
+   int count = (int) DatabaseUtils.queryNumEntries(sdb, TABLE);
+   sdb.close();
+   return count;
+}
+
 /**
  * Logs the amount of entries in the database.
  * This method gets called on INSERT and DELETE.
  */
 private void logRowCount(SQLiteDatabase sdb)
 {
-   long count = DatabaseUtils.queryNumEntries(sdb, TABLE);
-   Log.i(TAG, "row count = " + count);
+   Log.i(TAG, "row count = " + DatabaseUtils.queryNumEntries(sdb, TABLE));
 }
 
 }

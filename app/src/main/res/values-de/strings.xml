@@ -5,8 +5,10 @@
    <string name="title_new_pin">Neuer Stift</string>
    <string name="title_edit_pin">Bearbeite Stift</string>
 
-   <string name="input_description_priority">Priorität</string>
-   <string name="input_description_shownotificationactions">Zeige Benachrichtigungs-Actions</string>
+   <string name="txtTitleAndContent">Titel\nund textinhalt</string>
+   <string name="spinPriority">Priorität</string>
+   <string name="chkShowActions">Zeige Benachrichtigungs-Actions</string>
+   <string name="btnMoreSettings">Weitere Einstellungen</string>
 
    <string name="action_pin">Heften</string>
    <string name="action_cancel">Abbrechen</string>
@@ -14,11 +16,11 @@
    <string name="action_delete_pins">Entfernen Stifte…</string>
    <string name="action_order_pins">Sortieren Stifte…</string>
 
-   <string name="txtTitleAndContent">Titel\nund textinhalt</string>
-
    <string name="message_clipped_pin">Pin wurde in die Zwischenablage kopiert.</string>
-   <string name="message_empty_title">Du musst einen Titel eingeben.</string>
    <string name="message_save_to_clipboard">In die Zwischenablage kopieren</string>
+   <string name="message_empty_title">Du musst einen Titel eingeben.</string>
+   <string name="message_too_many">MicroPinner kann nur 20 Stifte anzeigen (5 pro Priorität)</string>
+   <string name="requires_your_permission">MicroPinner braucht Ihre Erlaubnis</string>
 
    <string name="visibility_public">Normal</string>
    <string name="visibility_private">Privat</string>
@@ -28,6 +30,4 @@
    <string name="priority_low">Niedrig</string>
    <string name="priority_high">Hoch</string>
    <string name="priority_default">Normal</string>
-
-   <string name="requires_your_permission">MicroPinner braucht Ihre Erlaubnis</string>
 </resources>

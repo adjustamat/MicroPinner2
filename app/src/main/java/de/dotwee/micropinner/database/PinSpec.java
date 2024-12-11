@@ -15,14 +15,16 @@ public class PinSpec
  implements Serializable
 {
 private final long id;
-private String title;
-private String content;
+private @NonNull String title;
+private @NonNull String content;
+
+private boolean showActions;
 
 private int priority;
 private int order;
-public Integer maxOrder = null;
 
-private boolean showActions;
+public Integer maxOrder = null;
+//public Boolean selected = null;
 
 public PinSpec(long id,
  @NonNull String title, @NonNull String content,
@@ -95,7 +97,9 @@ public int getOrder()
 
 public String getOrderKey()
 {
-   return String.valueOf(order);
+   if(order < 16)
+      return "0" + Integer.toHexString(order);
+   return Integer.toHexString(order);
 }
 
 public void setOrder(int order)
@@ -105,15 +109,15 @@ public void setOrder(int order)
 
 public String getNotificationChannelID()
 {
-   return priority + "_" + order;
+   return "p" + priority + "_" + order;
 }
 
-public String getNotificationChannelName(ArrayAdapter<String> priorityAdapter)
+public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedStrings)
 {
    if(order == 0)
-      return priorityAdapter.getItem(priority);
+      return priorityLocalizedStrings.getItem(priority);
    else
-      return priorityAdapter.getItem(priority) + " " + (1 + order);
+      return priorityLocalizedStrings.getItem(priority) + " " + (1 + order);
 }
 
 public int getPriorityIndex()
@@ -205,5 +209,21 @@ public String toString()
            ", order=" + order +
            ", showActions=" + showActions +
            '}';
+}
+
+@Override
+public final boolean equals(Object o)
+{
+   if(this == o) return true;
+   if(!(o instanceof PinSpec)) return false;
+   
+   PinSpec spec = (PinSpec) o;
+   return id == spec.id;
+}
+
+@Override
+public int hashCode()
+{
+   return Long.hashCode(id);
 }
 }

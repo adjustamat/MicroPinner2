@@ -4,6 +4,8 @@ espressoCore = "3.0.2"
 espressoIntents = "3.0.2"
 runner = "1.0.2"
 rules = "1.0.2"
+recyclerview = "1.3.2"
+recyclerviewSelection = "1.1.0"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
@@ -11,6 +13,8 @@ espresso-core = { group = "com.android.support.test.espresso", name = "espresso-
 espresso-intents = { group = "com.android.support.test.espresso", name = "espresso-intents", version.ref = "espressoIntents" }
 runner = { group = "com.android.support.test", name = "runner", version.ref = "runner" }
 rules = { group = "com.android.support.test", name = "rules", version.ref = "rules" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+recyclerview-selection = { group = "androidx.recyclerview", name = "recyclerview-selection", version.ref = "recyclerviewSelection" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
