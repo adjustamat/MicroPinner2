@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.os.Build.VERSION_CODES;
+import android.os.Build;
 import android.widget.ArrayAdapter;
 
 /**
@@ -23,9 +23,6 @@ private boolean showActions;
 private int priority;
 private int order;
 
-public Integer maxOrder = null;
-//public Boolean selected = null;
-
 public PinSpec(long id,
  @NonNull String title, @NonNull String content,
  int priority, int order, boolean showActions)
@@ -33,10 +30,8 @@ public PinSpec(long id,
    this.id = id;
    this.title = title;
    this.content = content;
-//   this.visibility = visibility;
    this.priority = priority;
    this.order = order;
-//   this.persistent = persistent;
    this.showActions = showActions;
 }
 
@@ -47,6 +42,11 @@ public void setData(@NonNull String title, @NonNull String content, int priority
    this.content = content;
    this.priority = priority;
    this.showActions = showActions;
+}
+
+public void setOrder(int order)
+{
+   this.order = order;
 }
 
 public long getId()
@@ -71,43 +71,22 @@ public String getContent()
    return content;
 }
 
-//public int getVisibilityIndex()
-//{
-//   return visibility;
-//}
-//
-//public int getVisibility()
-//{
-//   switch(visibility) {
-//   case 0:
-//      return Notification.VISIBILITY_PUBLIC;
-//   case 1:
-//      return Notification.VISIBILITY_PRIVATE;
-//   case 2:
-//      return Notification.VISIBILITY_SECRET;
-//   default:
-//      throw new RuntimeException("illegal visibility value");
-//   }
-//}
+public String getSortKey()
+{
+   return Integer.toHexString(order);
+}
 
 public int getOrder()
 {
    return order;
 }
 
-public String getOrderKey()
-{
-   if(order < 16)
-      return "0" + Integer.toHexString(order);
-   return Integer.toHexString(order);
-}
-
-public void setOrder(int order)
-{
-   this.order = order;
-}
-
 public String getNotificationChannelID()
+{
+   return getChannelID(priority, order);
+}
+
+public static String getChannelID(int priority, int order)
 {
    return "p" + priority + "_" + order;
 }
@@ -157,10 +136,10 @@ public int getPreOreoPriority()
    }
 }
 
-@RequiresApi(VERSION_CODES.O) // OREO == 26
+@RequiresApi(Build.VERSION_CODES.N) // NOUGAT == 24
 public int getImportance()
 {
-   // these constants actually only need VERSION_CODES.N // NOUGAT == 24
+   // this method actually only used when Build.VERSION.SDK_INT >= VERSION_CODES.O // OREO == 26
    switch(priority) {
    case 0:
       return NotificationManager.IMPORTANCE_HIGH;
@@ -175,11 +154,6 @@ public int getImportance()
    }
 }
 
-//public boolean isPersistent()
-//{
-//   return persistent;
-//}
-
 public boolean isShowActions()
 {
    return showActions;
@@ -188,7 +162,7 @@ public boolean isShowActions()
 @NonNull
 public String toClipString()
 {
-   if(content != null && !content.isEmpty()) {
+   if(!content.isEmpty()) {
       return title + " - " + content;
    }
    else {
@@ -200,15 +174,27 @@ public String toClipString()
 @Override
 public String toString()
 {
-   return "PinSpec{" +
-           "id=" + id +
-           ", title='" + title + '\'' +
-           ", content='" + content + '\'' +
-//           ", visibility=" + visibility +
-           ", priority=" + priority +
-           ", order=" + order +
-           ", showActions=" + showActions +
-           '}';
+   return "Pin{" + "id=" + id +
+           ", title='" + title + "', content='" + content + "', priority=" + priority +
+           ", order=" + order + ", showActions=" + showActions + '}';
+}
+
+public final boolean test(Object o)
+{
+   if(!equals(o))
+      return false;
+   PinSpec other = (PinSpec) o;
+   if(!title.equals(other.title))
+      throw new RuntimeException("title different");
+   if(!content.equals(other.content))
+      throw new RuntimeException("content different");
+   if(priority != other.priority)
+      throw new RuntimeException("priority different");
+   if(order != other.order)
+      throw new RuntimeException("order different");
+   if(showActions != other.showActions)
+      throw new RuntimeException("showActions different");
+   return true;
 }
 
 @Override
@@ -216,9 +202,8 @@ public final boolean equals(Object o)
 {
    if(this == o) return true;
    if(!(o instanceof PinSpec)) return false;
-   
-   PinSpec spec = (PinSpec) o;
-   return id == spec.id;
+   PinSpec other = (PinSpec) o;
+   return id == other.id;
 }
 
 @Override

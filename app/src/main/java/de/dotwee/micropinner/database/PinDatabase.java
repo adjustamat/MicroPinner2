@@ -105,6 +105,21 @@ public void changeOrderForPins(long id1, int order1, long id2, int order2)
    contentValues.put(COL_ORDER, order2);
    sdb.update(TABLE, contentValues,
     COL_ID + "=" + id2, null);
+   sdb.close();
+}
+
+private int getNewOrderForPriority(SQLiteDatabase sdb, int priorityIndex)
+{
+   return (int) DatabaseUtils.queryNumEntries(sdb, TABLE,
+    COL_PRIORITY + "=" + priorityIndex);
+}
+
+public int getNewOrderForPriority(int priority)
+{
+   SQLiteDatabase sdb = getReadableDatabase();
+   int ret = getNewOrderForPriority(sdb, priority);
+   sdb.close();
+   return ret;
 }
 
 /**
@@ -128,8 +143,7 @@ public PinSpec writePin(PinSpec editing,
    if(editing == null) {
       
       // check if we can create new pin
-      int orderWithinPrio = (int) DatabaseUtils.queryNumEntries(sdb, TABLE,
-       COL_PRIORITY + "=" + priorityIndex);
+      int orderWithinPrio = getNewOrderForPriority(sdb, priorityIndex);
       int total = (int) DatabaseUtils.queryNumEntries(sdb, TABLE);
       if(total >= MAX_NOTIFICATIONS || orderWithinPrio >= MAX_PER_PRIO) {
          Log.i(TAG, "Cannot create new pin because there are " + orderWithinPrio +
@@ -200,7 +214,6 @@ public List<PinSpec> getAllPins()
       long id = contentValues.getAsLong(COL_ID);
       String title = contentValues.getAsString(COL_TITLE);
       String content = contentValues.getAsString(COL_CONTENT);
-//   this.visibility = contentValues.getAsInteger(COLUMN_VISIBILITY);
       int priority = contentValues.getAsInteger(COL_PRIORITY);
       int order = contentValues.getAsInteger(COL_ORDER);
       boolean showActions = (contentValues.getAsInteger(COL_SHOW_ACTIONS) != 0);
@@ -229,5 +242,4 @@ private void logRowCount(SQLiteDatabase sdb)
 {
    Log.i(TAG, "row count = " + DatabaseUtils.queryNumEntries(sdb, TABLE));
 }
-
 }

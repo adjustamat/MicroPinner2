@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -27,13 +29,6 @@ public class FragEditor
 {
 public final static String EXTRA_PIN_SPEC = "IAMAPIN";
 private static final String DBG = "FragEditor";
-
-private PinSpec editing = null;
-
-private Spinner spinPriority;
-private EditText txtTitleAndContent;
-private CheckBox chkShowActions;
-private PreferencesHandler preferencesHandler;
 
 public static FragEditor getNewCreatingInstance()
 {
@@ -68,6 +63,14 @@ public void onSaveInstanceState(@NonNull Bundle outState)
 private FragEditor()
 {
 }
+
+private PinSpec editing = null;
+//private int order;
+private String channelID;
+
+private Spinner spinPriority;
+private EditText txtTitleAndContent;
+private CheckBox chkShowActions;
 
 /**
  * Called to have the fragment instantiate its user interface view.
@@ -104,20 +107,11 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    chkShowActions = root.findViewById(R.id.chkShowActions);
    spinPriority = root.findViewById(R.id.spinPriority);
    txtTitleAndContent = root.findViewById(R.id.txtTitleAndContent);
-   preferencesHandler = PreferencesHandler.getInstance(getContext());
-   
-   // TODO: a listener on the spinner updates current channel ID and text on btnMoreSettings. Need database (order) as well!
-   
-   
-   Button btnMoreSettings = root.findViewById(R.id.btnMoreSettings);
-   btnMoreSettings.setOnClickListener(v -> {
-      // TODO:
-      NotificationTools.openSettings(requireContext(),getCurrentChannelID());
-   });
    
    // on change, store default value for checkbox
    chkShowActions.setOnCheckedChangeListener(
-    (buttonView, isChecked) -> preferencesHandler.setNotificationActionsEnabled(isChecked)
+    (buttonView, isChecked) -> PreferencesHandler.getInstance(requireContext())
+                                .setNotificationActionsEnabled(isChecked)
    );
    
    // set choices for spinPriority
@@ -136,15 +130,47 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
       else {
          txtTitleAndContent.setText(editing.getTitle() + "\n" + editing.getContent());
       }
-   }
-   else {
-      // default priority for new pins
-      spinPriority.setSelection(PinSpec.priorityToIndex(Notification.PRIORITY_DEFAULT), false);
+   } // editing != null
+   else { // editing == null
       
       // load default value for checkbox
+      chkShowActions.setChecked(
+       PreferencesHandler.getInstance(requireContext()).isNotificationActionsEnabled()
+      );
       
-      chkShowActions.setChecked(preferencesHandler.isNotificationActionsEnabled());
-   }
+      // default priority for new pin
+      int priorityIndex = PinSpec.priorityToIndex(Notification.PRIORITY_DEFAULT);
+      spinPriority.setSelection(priorityIndex, false);
+      
+      // create channel ID for new pin
+      int newOrderForPriority =
+       PinDatabase.getInstance(requireContext()).getNewOrderForPriority(priorityIndex);
+      channelID = PinSpec.getChannelID(priorityIndex, newOrderForPriority);
+      spinPriority.setOnItemSelectedListener(new OnItemSelectedListener()
+      {
+         @Override
+         public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+         {
+            int newOrderForPriority =
+             PinDatabase.getInstance(requireContext()).getNewOrderForPriority(position);
+            channelID = PinSpec.getChannelID(position, newOrderForPriority);
+         }
+         
+         @Override
+         public void onNothingSelected(AdapterView<?> parent)
+         {
+         }
+      });
+   } // editing == null
+   
+   // button takes user to channel settings
+   Button btnMoreSettings = root.findViewById(R.id.btnMoreSettings);
+   btnMoreSettings.setOnClickListener(v -> {
+      if(editing == null)
+         NotificationTools.openSettings(requireContext(), channelID);
+      else
+         NotificationTools.openSettings(requireContext(), editing.getNotificationChannelID());
+   });
    
    return root;
 }
@@ -204,7 +230,6 @@ public void onPrepareActionBar(ActionBar bar)
 @Override
 public void onPrepareMenu(Menu menu)
 {
-   // TODO: see my plan. (order)
    MenuItem item;
    item = menu.findItem(R.id.btnCancel);
    item.setVisible(editing == null);

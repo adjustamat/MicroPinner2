@@ -45,7 +45,7 @@ static {
 private static PendingIntent getEditorIntent(@NonNull Context context, @NonNull PinSpec pin)
 {
    // intent for starting Activity MainActivity (edit the pin)
-   Intent resultIntent = new Intent(context, MainActivity.class);
+   Intent resultIntent = new Intent(Intent.ACTION_VIEW, null, context, MainActivity.class);
    resultIntent.putExtra(FragEditor.EXTRA_PIN_SPEC, pin);
    resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
    return PendingIntent.getActivity(context, 0, resultIntent,
@@ -75,8 +75,7 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
      .setAutoCancel(false)
      .setCategory(Notification.CATEGORY_STATUS)
      .setPriority(pin.getPreOreoPriority())
-//     .setVisibility(pin.getVisibility())
-     // .setPublicVersion()
+     .setSortKey(pin.getSortKey())
      .setOngoing(true)
      
      .setContentTitle(pin.getTitle())
@@ -115,23 +114,17 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
        channelName,
        pin.getImportance()
       );
-      channel.setSound(null,null);
+      channel.setSound(null, null);
       notificationManager.createNotificationChannel(channel);
    }
    
    Log.i(TAG, "Send notification with pin id " + pin.getId() + " to system");
    
    Notification notification = builder.build();
-   // only delete noti with delete button in MainActivity!
-   /*
-    * Bit to be bitswised-ored into the {@link #flags} field that should be
-    * set by the system if this notification is not dismissible.
-    *
-    * This flag is for internal use only; applications cannot set this flag directly.
-    * @hide
-   public static final int FLAG_NO_DISMISS = 0x00002000;
-    */
-//   notification.flags |= 0x00002000;
+   /* This flag is for internal use only; applications cannot set this flag directly.
+    * set by the system if this notification is not dismissible. * @hide
+   public static final int FLAG_NO_DISMISS = 0x00002000;*/
+//   notification.flags |= 0x00002000; // TODO: test!
    notificationManager.notify(pin.getIdAsInt(), notification);
    
 }
@@ -148,7 +141,7 @@ public static void restoreAllPins(Context context)
 
 public static void openSettings(Context ctx, @Nullable String channelID)
 {
-   Intent intent = null;
+   Intent intent;
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // OREO == 26
       if(channelID == null) {
          intent = new Intent(ACTION_SETTINGS);
@@ -161,11 +154,9 @@ public static void openSettings(Context ctx, @Nullable String channelID)
    else {
       intent = new Intent(ACTION_SETTINGS);
    }
-   //
    intent.putExtra(EXTRA_SETTINGS_PKG, ctx.getPackageName());
    intent.putExtra("app_package", ctx.getPackageName());
    intent.putExtra("app_uid", ctx.getApplicationInfo().uid);
-   
    ctx.startActivity(intent);
 }
 }

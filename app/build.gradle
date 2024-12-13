@@ -9,8 +9,8 @@ android{
       applicationId "de.dotwee.micropinner"
       minSdk 21
       targetSdk 34
-      versionCode 300
-      versionName 'v3.0.0'
+      versionCode 310
+      versionName 'v3.1.0'
 
    }
 
@@ -35,7 +35,6 @@ android{
 dependencies{
    implementation libs.appcompat
    implementation libs.recyclerview
-   implementation libs.recyclerview.selection
    androidTestImplementation libs.espresso.core
    androidTestImplementation libs.espresso.intents
    androidTestImplementation libs.runner

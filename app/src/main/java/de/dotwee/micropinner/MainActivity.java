@@ -29,7 +29,7 @@ import de.dotwee.micropinner.tools.PreferencesHandler;
 public class MainActivity
  extends AppCompatActivity
 {
-private static final String DBG = "MainActivity";
+//private static final String DBG = "MainActivity";
 public static final String PERMISSION_POST_NOTI;
 public static boolean hasPermission = false;
 
@@ -85,6 +85,12 @@ private boolean fragPopMayFinish()
    return false;
 }
 
+void invalidateActionBar(Frag currentFrag)
+{
+   currentFrag.onPrepareActionBar(getSupportActionBar());
+   invalidateMenu();
+}
+
 private void fragCommit(Frag frag)
 {
    fragBackstack.add(0, frag);
@@ -95,10 +101,19 @@ private void fragCommit(Frag frag)
    invalidateActionBar(frag);
 }
 
-void invalidateActionBar(Frag currentFrag)
+void showNewPin()
 {
-   currentFrag.onPrepareActionBar(getSupportActionBar());
-   invalidateMenu();
+   fragCommit(FragEditor.getNewCreatingInstance());
+}
+
+void showEditPin(PinSpec pin)
+{
+   fragCommit(FragEditor.getNewEditingInstance(pin));
+}
+
+void showList()
+{
+   fragCommit(FragList.getNewInstance());
 }
 
 /**
@@ -141,6 +156,56 @@ public boolean onPrepareOptionsMenu(Menu menu)
    return true;
 }
 
+@Override
+protected void onCreate(@Nullable Bundle savedInstanceState)
+{
+   super.onCreate(savedInstanceState);
+   
+   PreferencesHandler preferencesHandler = PreferencesHandler.getInstance(this);
+   preferencesHandler.isFirstUse();
+   
+   setContentView(R.layout.activity_main);
+   
+   ActionBar bar = Objects.requireNonNull(getSupportActionBar());
+   bar.setHideOnContentScrollEnabled(true);
+   bar.setDisplayShowTitleEnabled(true);
+   
+   // restore state
+   Intent intent = getIntent();
+   switch(intent.getAction()) {
+   case Intent.ACTION_CREATE_NOTE:
+      showNewPin();
+      break;
+   case Intent.ACTION_MAIN:
+      showList();
+      break;
+   default: // case Intent.ACTION_DEFAULT: // ACTION_VIEW
+      // deserialize our pin from the intent
+      PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
+      if(pin == null) {
+         // fallback if ACTION_DEFAULT instead of ACTION_MAIN was used to launch app
+         showList();
+      }
+      else {
+         showEditPin(pin);
+      }
+   }
+   
+   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
+       PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
+        this, PERMISSION_POST_NOTI)) {
+      if(shouldShowRequestPermissionRationale(PERMISSION_POST_NOTI)) {
+         Toast.makeText(this, R.string.requires_your_permission, Toast.LENGTH_SHORT)
+          .show();
+      }
+      requestPermissions(new String[] {PERMISSION_POST_NOTI}, 1);
+   }
+   else {
+      hasPermission = true;
+      NotificationTools.restoreAllPins(this);
+   }
+}
+
 /**
  * This hook is called whenever an item in your options menu is selected.
  * The default implementation simply returns false to have the normal
@@ -173,29 +238,13 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
       Frag frag = fragBackstack.get(0);
       if(frag instanceof FragList) {
          FragList fragList = (FragList) frag;
-         // TODO: delete all selected pins from database
-         fragList.deleteSelected();
-        fragList.setMode(Mode.NORMAL);
+         // delete all selected pins from database
+         fragList.deleteSelectedPins();
       }
       else {
-         // TODO: delete frag.editing from database
          FragEditor fragEditor = (FragEditor) frag;
+         // delete frag.editing from database
          fragEditor.deletePin();
-///**
-// * This method handles the click on the negative dialog button.
-// */
-//public void onButtonNegative()
-//{
-//   if(hasParentPin()) {
-//      notificationManager.cancel(intentPin.getIdAsInt());
-//
-//      Intent intent = new Intent(activity, OnDeleteReceiver.class);
-//      intent.putExtra(NotificationTools.EXTRA_INTENT, intentPin);
-//      activity.sendBroadcast(intent);
-//   }
-//
-//   activity.finish();
-//}
       }
    }
    else if(id == R.id.btnDeleteMode) {
@@ -206,88 +255,10 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
       FragList frag = (FragList) fragBackstack.get(0);
       frag.setMode(Mode.ORDER);
    }
-//   if(item.getItemId() == R.id.nav_settings) {
-//      NavController navController =
-//       Navigation.findNavController(this, R.id.nav_host_fragment_content_responsive);
-//      navController.navigate(R.id.nav_settings);
-//   }
-   /*
-   
-public void onBtnNew()
-{
-   MainActivity activity = (MainActivity) requireActivity();
-   activity.showNewPin();
-}
-
-    */
-   
-   return super.onOptionsItemSelected(item);
-}
-
-void showNewPin()
-{
-   fragCommit(FragEditor.getNewCreatingInstance());
-}
-
-void showEditPin(PinSpec pin)
-{
-   fragCommit(FragEditor.getNewEditingInstance(pin));
-}
-
-void showList()
-{
-   fragCommit(FragList.getNewInstance());
-}
-
-@Override
-protected void onCreate(@Nullable Bundle savedInstanceState)
-{
-   super.onCreate(savedInstanceState);
-   
-   PreferencesHandler preferencesHandler = PreferencesHandler.getInstance(this);
-   preferencesHandler.isFirstUse();
-   //PinDatabase.getInstance(getApplicationContext());
-   
-   setContentView(R.layout.activity_main);
-   
-   ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-   bar.setHideOnContentScrollEnabled(true);
-   bar.setDisplayShowTitleEnabled(true);
-   
-   // restore state
-   Intent intent = getIntent();
-   
-   switch(intent.getAction()) {
-   case Intent.ACTION_CREATE_NOTE:
-      showNewPin();
-      break;
-   case Intent.ACTION_MAIN:
-      showList();
-      break;
-   default: // case Intent.ACTION_DEFAULT:
-      // deserialize our pin from the intent
-      PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
-      if(pin == null) {
-         showList();
-      }
-      else {
-         showEditPin(pin);
-      }
-   }
-   
-   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
-       PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
-        this, PERMISSION_POST_NOTI)) {
-      if(shouldShowRequestPermissionRationale(PERMISSION_POST_NOTI)) {
-         Toast.makeText(this, R.string.requires_your_permission, Toast.LENGTH_SHORT)
-          .show();
-      }
-      requestPermissions(new String[] {PERMISSION_POST_NOTI}, 1);
-   }
    else {
-      hasPermission = true;
-      NotificationTools.restoreAllPins(this);
+      return super.onOptionsItemSelected(item);
    }
+   return true;
 }
 
 @Override
@@ -295,7 +266,6 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
  @NonNull int[] grantResults)
 {
    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-   
    for(int i = 0; i < permissions.length; i++) {
       if(grantResults[i] == PackageManager.PERMISSION_GRANTED &&
           permissions[i].equals(permission.POST_NOTIFICATIONS)) {
@@ -304,22 +274,6 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
       }
    }
 }
-
-//@Override
-//public void setContentView(@LayoutRes int layoutResID)
-//{
-//   if(isTablet(this)) {
-//
-//      DisplayMetrics metrics = getResources().getDisplayMetrics();
-//      int newWidth = Math.round(320 * (metrics.densityDpi / 160f));
-//
-//      setContentView(View.inflate(this, layoutResID, null),
-//       new FrameLayout.LayoutParams(newWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
-//   }
-//   else {
-//      super.setContentView(layoutResID);
-//   }
-//}
 
 public static ArrayAdapter<String> getPriorityLocalizedStrings(Context ctx)
 {

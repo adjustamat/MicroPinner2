@@ -1,4 +1,4 @@
-package de.dotwee.micropinner.tools;
+package de.dotwee.micropinner;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;

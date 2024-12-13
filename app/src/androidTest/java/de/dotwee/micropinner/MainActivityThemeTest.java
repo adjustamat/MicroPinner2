@@ -7,7 +7,6 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import de.dotwee.micropinner.tools.Matches;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +15,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static de.dotwee.micropinner.tools.TestTools.recreateActivity;
+import static de.dotwee.micropinner.TestTools.recreateActivity;
 
 /**
  * Created by Lukas Wolfsteiner on 06.11.2015.
@@ -78,14 +77,12 @@ public void setUp()
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @Test
 public void testThemeLightAccent()
- throws Exception
 {
    changeUiMode(activityTestRule, AppCompatDelegate.MODE_NIGHT_NO);
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_hint_title, R.string.txtTitleAndContent,
-    R.string.spinPriority, R.string.input_description_visibility
+    R.string.txtTitleAndContent, R.string.spinPriority,
    }) {
       onView(withText(description)).check(
        matches(Matches.withTextColor(getAccentColor(activityTestRule, true))));
@@ -98,7 +95,6 @@ public void testThemeLightAccent()
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @Test
 public void testThemeLightBackground()
- throws Exception
 {
    changeUiMode(activityTestRule, AppCompatDelegate.MODE_NIGHT_NO);
    
@@ -112,14 +108,12 @@ public void testThemeLightBackground()
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @Test
 public void testThemeDarkAccent()
- throws Exception
 {
    changeUiMode(activityTestRule, AppCompatDelegate.MODE_NIGHT_YES);
    
    // check color for all TextView descriptions
    for(int description : new int[] {
-    R.string.input_hint_title, R.string.txtTitleAndContent,
-    R.string.spinPriority, R.string.input_description_visibility
+    R.string.txtTitleAndContent, R.string.spinPriority
    }) {
       onView(withText(description)).check(matches(Matches.withTextColor(
        getAccentColor(activityTestRule, false)
@@ -133,7 +127,6 @@ public void testThemeDarkAccent()
 //@RequiresApi(api=Build.VERSION_CODES.JELLY_BEAN_MR1)
 @Test
 public void testThemeDarkBackground()
- throws Exception
 {
    changeUiMode(activityTestRule, AppCompatDelegate.MODE_NIGHT_YES);
    

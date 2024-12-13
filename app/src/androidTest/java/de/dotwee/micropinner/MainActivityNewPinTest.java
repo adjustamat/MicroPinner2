@@ -2,34 +2,29 @@ package de.dotwee.micropinner;
 
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-
+import de.dotwee.micropinner.database.PinDatabase;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import de.dotwee.micropinner.database.PinDatabase;
-import de.dotwee.micropinner.tools.PreferencesHandler;
-
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
+import static android.support.test.espresso.matcher.ViewMatchers.hasFocus;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isFocusable;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static de.dotwee.micropinner.tools.TestTools.getPreferencesHandler;
-import static de.dotwee.micropinner.tools.TestTools.recreateActivity;
+import static de.dotwee.micropinner.TestTools.recreateActivity;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
@@ -45,60 +40,25 @@ private static final String LOG_TAG = "MainActivityNewPinTest";
  */
 @Rule
 public ActivityTestRule<MainActivity> activityTestRule =
- new ActivityTestRule<>(MainActivity.class);
+ new ActivityTestRule<>(MainActivity.class, false, false);
 
-/**
- * This method verifies the advanced-switch's functionality.
- * @throws Exception
- */
-@Test
-public void testAdvancedSwitch()
- throws Exception
+@Before
+public void setUp()
 {
-   boolean currentState = getPreferencesHandler(activityTestRule).isAdvancedUsed();
-   onView(withId(R.id.switchAdvanced)).perform(click());
-   assertEquals(!currentState, getPreferencesHandler(activityTestRule).isAdvancedUsed());
-   
-   onView(withId(R.id.switchAdvanced)).perform(click());
-   assertEquals(currentState, getPreferencesHandler(activityTestRule).isAdvancedUsed());
+   activityTestRule.launchActivity(TestTools.launchList());
+   TestTools.testDatabase(activityTestRule.getActivity());
+   activityTestRule.finishActivity();
 }
 
 /**
- * This method looks for an EditText with id = R.id.editTextTitle,
- * performs some inout and verifies the EditText's entered value.
+ * This method performs some input and verifies the EditText's entered value.
  */
 @Test
 public void testEditTextTitle()
- throws Exception
 {
+   activityTestRule.launchActivity(TestTools.launchNewPin());
+   onView(withId(R.id.txtTitleAndContent)).check(matches(hasFocus()));
    final String value = "MicroPinner title input";
-   
-   onView(withId(R.id.editTextTitle)).perform(typeText(value)).check(matches(withText(value)));
-}
-
-/**
- * This method recreates the main activity and verifies the focus,
- * which should be on the title EditText.
- */
-@Test
-public void testEditTextFocus()
- throws Exception
-{
-   activityTestRule.getActivity().runOnUiThread(() -> activityTestRule.getActivity().recreate());
-   
-   onView(withId(R.id.editTextTitle)).check(matches(isFocusable()));
-}
-
-/**
- * This method looks for an EditText with id = R.id.editTextContent,
- * performs some inout and verifies the EditText's entered value.
- */
-@Test
-public void testEditTextContent()
- throws Exception
-{
-   final String value = "MicroPinner title input";
-   
    onView(withId(R.id.txtTitleAndContent)).perform(typeText(value)).check(matches(withText(value)));
 }
 
@@ -108,14 +68,14 @@ public void testEditTextContent()
  */
 @Test
 public void testEmptyTitleToast()
- throws Exception
 {
+   recreateActivity(activityTestRule);
    
    // perform empty input
-   onView(withId(R.id.editTextTitle)).perform(typeText(""));
+   onView(withId(R.id.txtTitleAndContent)).perform(typeText(""));
    
    // click pin button
-   onView(withText(R.string.action_pin)).perform(click());
+   onView(withContentDescription(R.string.action_pin)).perform(click());
    
    // verify toast existence
    onView(withText(R.string.message_empty_title)).inRoot(
@@ -124,66 +84,10 @@ public void testEmptyTitleToast()
 }
 
 /**
- * This method clicks the advanced-switch button, which should
- * hide CheckBoxes and verifies their (invisible) state.
- */
-@Test
-public void testExpandMechanismThroughSwitch()
- throws Exception
-{
-   
-   onView(withId(R.id.switchAdvanced)).perform(click());
-   if(getPreferencesHandler(activityTestRule).isAdvancedUsed()) {
-      
-      onView(withId(R.id.switchAdvanced)).perform(click());
-   }
-   else recreateActivity(activityTestRule);
-   
-   // CheckBoxes should be not visible
-   onView(withId(R.id.checkBoxPersistentPin)).check(matches(not(isDisplayed())));
-   onView(withId(R.id.chkShowActions)).check(matches(not(isDisplayed())));
-}
-
-/**
- * This method clicks the header layout, which should
- * hide CheckBoxes and verifies their (invisible) state.
- */
-@Test
-public void testExpandMechanismThroughHeader()
- throws Exception
-{
-   
-   onView(withId(R.id.linearLayoutHeader)).perform(click());
-   if(getPreferencesHandler(activityTestRule).isAdvancedUsed()) {
-      
-      onView(withId(R.id.linearLayoutHeader)).perform(click());
-   }
-   else recreateActivity(activityTestRule);
-   
-   // CheckBoxes should be not visible
-   onView(withId(R.id.checkBoxPersistentPin)).check(matches(not(isDisplayed())));
-   onView(withId(R.id.chkShowActions)).check(matches(not(isDisplayed())));
-}
-
-/**
- * This method verifies the preference mechanism for the advanced usage.
- */
-@Test
-public void testPreferencesAdvanced()
- throws Exception
-{
-   PreferencesHandler preferencesHandler = getPreferencesHandler(activityTestRule);
-   
-   preferencesHandler.setAdvancedUse(true);
-   assertTrue(preferencesHandler.isAdvancedUsed());
-}
-
-/**
  * This method verifies the persist mechanism for user-created pins.
  */
 @Test
 public void testUserCreateNewPin()
- throws Exception
 {
    recreateActivity(activityTestRule);
    
@@ -191,40 +95,22 @@ public void testUserCreateNewPin()
     PinDatabase.getInstance(activityTestRule.getActivity().getApplicationContext());
    pinDatabase.deleteAll();
    
-   long previousPinAmount = pinDatabase.count();
+   long previousPinAmount = pinDatabase.getCount();
    
    // enter a title
-   onView(withId(R.id.editTextTitle)).perform(typeText(LOG_TAG));
+   onView(withId(R.id.txtTitleAndContent)).perform(typeText(LOG_TAG));
    
    // mark with high priority
-   onView(withId(R.id.spinPriority)).perform(click());
    String highPriority = activityTestRule.getActivity().getString(R.string.priority_high);
+   onView(withId(R.id.spinPriority)).perform(click());
    onData(allOf(is(instanceOf(String.class)), is(highPriority))).perform(click());
    onView(withId(R.id.spinPriority)).check(matches(withSpinnerText(R.string.priority_high)));
    
-   // mark with private visibility
-   onView(withId(R.id.spinnerVisibility)).perform(click());
-   String privateVisibility =
-    activityTestRule.getActivity().getString(R.string.visibility_private);
-   onData(allOf(is(instanceOf(String.class)), is(privateVisibility))).perform(click());
-   onView(withId(R.id.spinnerVisibility)).check(
-    matches(withSpinnerText(R.string.visibility_private)));
-   
-   // expand layout
-   if(!getPreferencesHandler(activityTestRule).isAdvancedUsed()) {
-      onView(withId(R.id.switchAdvanced)).perform(click()).check(matches(isChecked()));
-   }
-   
-   // mark as persistent
-   if(!activityTestRule.getActivity().isPersistent()) {
-      onView(withId(R.id.checkBoxPersistentPin)).perform(click()).check(matches(isChecked()));
-   }
-   
-   // select persist button
-   onView(withId(R.id.buttonPin)).perform(click());
+   // select pin button
+   onView(withContentDescription(R.string.action_pin)).perform(click());
    
    // make sure pin exists
-   long newPinAmount = pinDatabase.count();
+   long newPinAmount = pinDatabase.getCount();
    assertEquals(previousPinAmount + 1, newPinAmount);
 }
 }
