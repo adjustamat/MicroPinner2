@@ -9,8 +9,8 @@ android{
       applicationId "de.dotwee.micropinner"
       minSdk 21
       targetSdk 34
-      versionCode 29
-      versionName "v2.2.0"
+      versionCode 300
+      versionName "v3.0.0"
 
    }
 
