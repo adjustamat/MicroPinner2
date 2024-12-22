@@ -36,7 +36,6 @@ private FragList()
 {
 }
 
-private RecyclerView lstList;
 private final ListAdapter listAdapter = new ListAdapter();
 private boolean canOrder;
 private HashSet<PinSpec> selected;
@@ -50,7 +49,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    
    priorityLocalizedStrings = MainActivity.getPriorityLocalizedStrings(requireContext());
    
-   lstList = (RecyclerView) root;
+   RecyclerView lstList = (RecyclerView) root;
    lstList.setAdapter(listAdapter);
    updateList();
    
@@ -91,13 +90,14 @@ class ListAdapter
    void update(List<PinSpec> allPins)
    {
       maxOrder = new Integer[allPins.size()];
-//      int max = Math.max(pins.size(), allPins.size());
+      canOrder = false;
       pins.clear();
       pins.addAll(allPins);
       int i = 0;
       int prevPrio = -1;
       for(PinSpec pin : allPins) {
          if(pin.getPriorityIndex() == prevPrio) {
+            // there are two pins with the same priority.
             canOrder = true;
             int newMax = pin.getOrder();
             for(int back = 0; back <= newMax; back++) {
@@ -107,12 +107,13 @@ class ListAdapter
          prevPrio = pin.getPriorityIndex();
          i++;
       }
+      
+      // show changes in RecyclerView
       notifyDataSetChanged();
-//      notifyItemRangeChanged(0, max,null);
    }
    
    @Override
-   public void onBindViewHolder(@NonNull Holder holder, int position)
+   public void onBindViewHolder(@NonNull Holder holder, final int position)
    {
       final PinSpec pin = pins.get(position);
       
@@ -124,14 +125,40 @@ class ListAdapter
          Integer max = maxOrder[position];
          up = max != null && pin.getOrder() > 0;
          down = max != null && pin.getOrder() < max;
-         holder.ibtnItemMoveUp.setOnClickListener(v -> {
-            //  TODO: position and position-1
-            PinDatabase.getInstance(requireContext()).changeOrderForPins();
-            // TODO: also change in list, check recyclerview how I do that.
-         });
-         holder.ibtnItemMoveDown.setOnClickListener(v -> {
-            //  TODO: position and position+1
-         });
+         if(up)
+            holder.ibtnItemMoveUp.setOnClickListener(v -> {
+               // change order in list
+               PinSpec pin2 = pins.set(position - 1, pin);
+               pins.set(position, pin2);
+               
+               // update database
+               PinDatabase.getInstance(requireContext()).changeOrderForPins(
+                pin.getId(), pin2.getOrder(), pin2.getId(), pin.getOrder());
+               
+               // show changes in RecyclerView
+               notifyItemRangeChanged(position - 1, 2);
+               
+               // update order of system notifications
+               NotificationTools.notify(requireContext(), pin);
+               NotificationTools.notify(requireContext(), pin2);
+            });
+         if(down)
+            holder.ibtnItemMoveDown.setOnClickListener(v -> {
+               // change order in list
+               PinSpec pin2 = pins.set(position + 1, pin);
+               pins.set(position, pin2);
+               
+               // update database
+               PinDatabase.getInstance(requireContext()).changeOrderForPins(
+                pin.getId(), pin2.getOrder(), pin2.getId(), pin.getOrder());
+               
+               // show changes in RecyclerView
+               notifyItemRangeChanged(position, 2);
+               
+               // update order of system notifications
+               NotificationTools.notify(requireContext(), pin);
+               NotificationTools.notify(requireContext(), pin2);
+            });
          break;
       case DELETE:
          select = selected.contains(pin);
@@ -279,7 +306,6 @@ private MenuItem btnNew;
 
 private void updateList()
 {
-   canOrder = false;
    List<PinSpec> allPins = PinDatabase.getInstance(requireContext()).getAllPins();
    listAdapter.update(allPins);
    updateButtons();
@@ -313,7 +339,7 @@ public void deleteSelectedPins()
    for(PinSpec pin : selected) {
       db.deletePin(pin.getId());
    }
-   updateList();
    setMode(Mode.NORMAL);
+   updateList();
 }
 }

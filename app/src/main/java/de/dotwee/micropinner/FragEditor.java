@@ -182,7 +182,7 @@ public boolean onUpMayFinish(boolean cancel)
       return true;
    
    // get title and optional content from EditText
-   String titleAndContent = txtTitleAndContent.getText().toString();
+   String titleAndContent = txtTitleAndContent.getText().toString().trim();
    if(titleAndContent.isEmpty()) {
       Toast.makeText(requireContext(), R.string.message_empty_title, Toast.LENGTH_SHORT).show();
       Log.d(DBG, "user entered no title, can't finish pin.");
@@ -192,26 +192,37 @@ public boolean onUpMayFinish(boolean cancel)
    String content;
    int split = titleAndContent.indexOf('\n');
    if(split == -1) {
+      // only one row
       title = titleAndContent;
       content = "";
    }
    else if(split == titleAndContent.length() - 1) {
+      // only one row, ends with newline
       title = titleAndContent.substring(0, split);
       content = "";
    }
    else {
+      // more than one row
       title = titleAndContent.substring(0, split);
       content = titleAndContent.substring(split + 1);
+   }
+   if(title.isEmpty()) {
+      Toast.makeText(requireContext(), R.string.message_empty_title, Toast.LENGTH_SHORT).show();
+      Log.d(DBG, "user entered no title, can't finish pin.");
+      return false;
    }
    
    // update database
    PinDatabase pinDatabase = PinDatabase.getInstance(requireContext());
    PinSpec written = pinDatabase.writePin(editing, title, content,
     spinPriority.getSelectedItemPosition(), chkShowActions.isChecked());
+   // check for database being full
    if(written == null) {
       Toast.makeText(requireContext(), R.string.message_too_many, Toast.LENGTH_LONG).show();
       return false;
    }
+   
+   // show pin
    NotificationTools.notify(requireContext(), written);
    return true;
 }
