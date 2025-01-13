@@ -81,18 +81,22 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
      .setContentTitle(pin.getTitle())
      .setSmallIcon(R.drawable.ic_notif_star)
      
-     .setContentText(pin.getContent())
-     .setStyle(new NotificationCompat.BigTextStyle().bigText(pin.getContent()))
-     
      .setContentIntent(getEditorIntent(context, pin))
      
+     // make sure the android system doesn't remove us - see OnCancelReceiver.
      .setDeleteIntent(PendingIntent.getBroadcast(context, pin.getIdAsInt(),
       new Intent(context, OnCancelReceiver.class)
        .setAction("notification_cancelled")
        .putExtra(FragEditor.EXTRA_PIN_SPEC, pin),
-      PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE))
-    //
-    ;
+      PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+   
+   // title is required, but content is not
+   String content = pin.getContent();
+   if(!content.isEmpty()) {
+      builder
+       .setContentText(content)
+       .setStyle(new NotificationCompat.BigTextStyle().bigText(content));
+   }
    
    if(pin.isShowActions()) {
       builder.addAction(R.drawable.ic_action_clip,

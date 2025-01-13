@@ -12,7 +12,7 @@ import de.dotwee.micropinner.NotificationTools;
 public class OnCancelReceiver
  extends BroadcastReceiver
 {
-private static final String DBG = "AutocloseReceiver";
+private static final String DBG = "OnCancelReceiver";
 
 @Override
 public void onReceive(@NonNull Context context, @NonNull Intent intent)

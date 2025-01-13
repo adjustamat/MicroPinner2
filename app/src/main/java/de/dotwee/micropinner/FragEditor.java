@@ -192,20 +192,22 @@ public boolean onUpMayFinish(boolean cancel)
    String content;
    int split = titleAndContent.indexOf('\n');
    if(split == -1) {
-      // only one row
+      // only one row, no newline - no content
       title = titleAndContent;
       content = "";
    }
    else if(split == titleAndContent.length() - 1) {
-      // only one row, ends with newline
+      // only one row, ends with newline - no content
       title = titleAndContent.substring(0, split);
       content = "";
    }
    else {
-      // more than one row
+      // more than one row - content is non-empty.
       title = titleAndContent.substring(0, split);
       content = titleAndContent.substring(split + 1);
    }
+   
+   // title is required!
    if(title.isEmpty()) {
       Toast.makeText(requireContext(), R.string.message_empty_title, Toast.LENGTH_SHORT).show();
       Log.d(DBG, "user entered no title, can't finish pin.");

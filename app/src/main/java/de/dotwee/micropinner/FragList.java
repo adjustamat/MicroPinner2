@@ -133,7 +133,9 @@ class ListAdapter
                
                // update database
                PinDatabase.getInstance(requireContext()).changeOrderForPins(
-                pin.getId(), pin2.getOrder(), pin2.getId(), pin.getOrder());
+                pin.getId(), pin2.getOrder(),
+                pin2.getId(), pin.getOrder()
+               );
                
                // show changes in RecyclerView
                notifyItemRangeChanged(position - 1, 2);
