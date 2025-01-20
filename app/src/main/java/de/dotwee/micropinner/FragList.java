@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +23,7 @@ import android.widget.TextView;
 import de.dotwee.micropinner.database.PinDatabase;
 import de.dotwee.micropinner.database.PinSpec;
 
-class FragList
+public class FragList
  extends Frag
 {
 private static final String DBG = "FragList";
@@ -59,11 +60,11 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
 static class Holder
  extends RecyclerView.ViewHolder
 {
-   CheckBox chkItemSelected;
-   TextView lblItemTitle;
-   TextView lblItemChannelName;
-   ImageButton ibtnItemMoveUp;
-   ImageButton ibtnItemMoveDown;
+   final CheckBox chkItemSelected;
+   final TextView lblItemTitle;
+   final TextView lblItemChannelName;
+   final ImageButton ibtnItemMoveUp;
+   final ImageButton ibtnItemMoveDown;
    
    public Holder(@NonNull View itemView)
    {
@@ -130,11 +131,14 @@ class ListAdapter
                // change order in list
                PinSpec pin2 = pins.set(position - 1, pin);
                pins.set(position, pin2);
+               int order = pin.getOrder();
+               pin.setOrder(pin2.getOrder());
+               pin2.setOrder(order);
                
                // update database
                PinDatabase.getInstance(requireContext()).changeOrderForPins(
-                pin.getId(), pin2.getOrder(),
-                pin2.getId(), pin.getOrder()
+                pin.getId(), pin.getOrder(),
+                pin2.getId(), order
                );
                
                // show changes in RecyclerView
@@ -149,10 +153,15 @@ class ListAdapter
                // change order in list
                PinSpec pin2 = pins.set(position + 1, pin);
                pins.set(position, pin2);
+               int order = pin.getOrder();
+               pin.setOrder(pin2.getOrder());
+               pin2.setOrder(order);
                
                // update database
                PinDatabase.getInstance(requireContext()).changeOrderForPins(
-                pin.getId(), pin2.getOrder(), pin2.getId(), pin.getOrder());
+                pin.getId(), pin.getOrder(),
+                pin2.getId(), order
+               );
                
                // show changes in RecyclerView
                notifyItemRangeChanged(position, 2);
@@ -169,8 +178,8 @@ class ListAdapter
       
       holder.lblItemTitle.setText(pin.getTitle());
       holder.lblItemChannelName.setText(pin.getNotificationChannelName(priorityLocalizedStrings));
-      holder.ibtnItemMoveUp.setVisibility(up ? View.VISIBLE : View.GONE);
-      holder.ibtnItemMoveDown.setVisibility(down ? View.VISIBLE : View.GONE);
+      holder.ibtnItemMoveUp.setVisibility(up ? View.VISIBLE : View.INVISIBLE);
+      holder.ibtnItemMoveDown.setVisibility(down ? View.VISIBLE : View.INVISIBLE);
       holder.chkItemSelected.setVisibility(mode == Mode.DELETE ? View.VISIBLE : View.GONE);
       holder.chkItemSelected.setChecked(select);
       holder.itemView.setActivated(select);
@@ -258,6 +267,10 @@ private void updateButtons()
       Log.d(DBG, "updateButtons() - called before onPrepareMenu");
       return;
    }
+   if(getContext() == null) {
+      Log.d(DBG, "updateButtons() - no context");
+      return;
+   }
    boolean normal = mode == Mode.NORMAL;
    
    // btnDelete1 enabled if there are selected pins
@@ -308,7 +321,12 @@ private MenuItem btnNew;
 
 private void updateList()
 {
-   List<PinSpec> allPins = PinDatabase.getInstance(requireContext()).getAllPins();
+   Context ctx = getContext();
+   if(ctx == null) {
+      Log.d(DBG, "updateList() - no context");
+      return;
+   }
+   List<PinSpec> allPins = PinDatabase.getInstance(ctx).getAllPins();
    listAdapter.update(allPins);
    updateButtons();
 }
