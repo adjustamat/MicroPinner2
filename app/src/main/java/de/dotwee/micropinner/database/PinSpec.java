@@ -3,6 +3,7 @@ package de.dotwee.micropinner.database;
 import java.io.Serializable;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.os.Build;
@@ -179,22 +180,24 @@ public String toString()
            ", order=" + order + ", showActions=" + showActions + '}';
 }
 
-public final boolean test(Object o)
+@SuppressLint("DefaultLocale")
+public final String test(Object o)
 {
-   if(!equals(o))
-      return false;
    PinSpec other = (PinSpec) o;
+   if(!equals(o))
+      return String.format("test ID different: %d != %d", id, other.id);
    if(!title.equals(other.title))
-      throw new RuntimeException("title different");
+      return String.format("test %d title different: %s != %s", id, title, other.title);
    if(!content.equals(other.content))
-      throw new RuntimeException("content different");
+      return String.format("test %d content different: %s != %s", id, content, other.content);
    if(priority != other.priority)
-      throw new RuntimeException("priority different");
+      return String.format("test %d priority different: %d != %d", id, priority, other.priority);
    if(order != other.order)
-      throw new RuntimeException("order different");
+      return String.format("test %d order different: %d != %d", id, order, other.order);
    if(showActions != other.showActions)
-      throw new RuntimeException("showActions different");
-   return true;
+      return String.format("test %d showActions different: %b != %b", id,
+       showActions, other.showActions);
+   return String.format("test %d exactly equal :)", id);
 }
 
 @Override

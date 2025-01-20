@@ -17,11 +17,12 @@
        android:id="@+id/txtTitleAndContent"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
-       android:minLines="3"
+       android:minLines="5"
        android:hint="@string/txtTitleAndContent"
        android:importantForAutofill="no"
        android:maxWidth="400dp"
-       android:inputType="textImeMultiLine|textAutoCorrect|text|textMultiLine"
+       android:inputType="text|textAutoCorrect|textImeMultiLine|textMultiLine"
+       android:gravity="top"
        />
       <TextView
        android:labelFor="@id/spinPriority"

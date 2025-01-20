@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ xmlns:tools="http://schemas.android.com/tools"
  android:orientation="horizontal"
  android:layout_width="match_parent"
  android:layout_height="wrap_content"
@@ -15,24 +16,33 @@
     android:id="@+id/chkItemSelected"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:visibility="gone"
+    android:paddingVertical="16dp"
+    android:paddingEnd="8dp"
+    android:paddingStart="8dp"
     />
    <LinearLayout
     android:orientation="vertical"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_weight="1"
-    android:gravity="top|start"
     >
+      <!--   android:gravity="top|start"   -->
       <TextView
        android:id="@+id/lblItemTitle"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
+       android:textIsSelectable="true"
+       android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+       tools:ignore="SpeakableTextPresentCheck"
        />
       <TextView
        android:id="@+id/lblItemChannelName"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
+       android:layout_marginTop="2dp"
+       android:textIsSelectable="true"
+       android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+       tools:ignore="SpeakableTextPresentCheck"
        />
    </LinearLayout>
    <LinearLayout
@@ -46,7 +56,6 @@
        android:layout_height="wrap_content"
        android:src="@drawable/ic_arrow_up"
        android:contentDescription="@string/ibtnItemMoveUp"
-       android:visibility="gone"
        />
       <ImageButton
        android:id="@+id/ibtnItemMoveDown"
@@ -54,7 +63,6 @@
        android:layout_height="wrap_content"
        android:src="@drawable/ic_arrow_down"
        android:contentDescription="@string/ibtnItemMoveDown"
-       android:visibility="gone"
        />
    </LinearLayout>
 </LinearLayout>

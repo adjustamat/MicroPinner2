@@ -99,12 +99,15 @@ public void changeOrderForPins(long id1, int order1, long id2, int order2)
 {
    SQLiteDatabase sdb = getWritableDatabase();
    ContentValues contentValues = new ContentValues();
+   
    contentValues.put(COL_ORDER, order1);
    sdb.update(TABLE, contentValues,
     COL_ID + "=" + id1, null);
+   
    contentValues.put(COL_ORDER, order2);
    sdb.update(TABLE, contentValues,
     COL_ID + "=" + id2, null);
+   
    sdb.close();
 }
 
@@ -196,7 +199,7 @@ public void deleteAll()
 }
 
 /**
- * Returns all pins in the database.
+ * Returns all pins in the database, ordered by PRIORITY, then ORDER.
  * @return A LinkedList with all the pins
  */
 @NonNull
@@ -208,15 +211,20 @@ public List<PinSpec> getAllPins()
     null, null,
     null, null, SQL_ORDER_BY);
    while(cursor.moveToNext()) {
-      ContentValues contentValues = new ContentValues();
-      DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
-      
-      long id = contentValues.getAsLong(COL_ID);
-      String title = contentValues.getAsString(COL_TITLE);
-      String content = contentValues.getAsString(COL_CONTENT);
-      int priority = contentValues.getAsInteger(COL_PRIORITY);
-      int order = contentValues.getAsInteger(COL_ORDER);
-      boolean showActions = (contentValues.getAsInteger(COL_SHOW_ACTIONS) != 0);
+//      ContentValues contentValues = new ContentValues();
+//      DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
+      long id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID));
+      String title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE));
+      String content = cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT));
+      int priority = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PRIORITY));
+      int order = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ORDER));
+      boolean showActions = (cursor.getInt(cursor.getColumnIndexOrThrow(COL_SHOW_ACTIONS)) != 0);
+//      long id = contentValues.getAsLong(COL_ID);
+//      String title = contentValues.getAsString(COL_TITLE);
+//      String content = contentValues.getAsString(COL_CONTENT);
+//      int priority = contentValues.getAsInteger(COL_PRIORITY);
+//      int order = contentValues.getAsInteger(COL_ORDER);
+//      boolean showActions = (contentValues.getAsInteger(COL_SHOW_ACTIONS) != 0);
       
       PinSpec pinSpec = new PinSpec(id, title, content, priority, order, showActions);
       list.add(pinSpec);
