@@ -9,6 +9,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
@@ -167,8 +168,11 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    setContentView(R.layout.activity_main);
    
    ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-   bar.setHideOnContentScrollEnabled(true);
-   bar.setDisplayShowTitleEnabled(true);
+   bar.setBackgroundDrawable(ResourcesCompat.getDrawable(
+    getResources(), R.drawable.bg_actionbar, getTheme()
+   ));
+//   bar.setHideOnContentScrollEnabled(true);
+//   bar.setDisplayShowTitleEnabled(true);
    
    // restore state
    Intent intent = getIntent();
