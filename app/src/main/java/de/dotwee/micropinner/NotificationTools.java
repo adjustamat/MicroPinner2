@@ -100,7 +100,7 @@ public static void notify(@NonNull Context context, @NonNull PinSpec pin)
    
    if(pin.isShowActions()) {
       builder.addAction(R.drawable.ic_action_clip,
-       context.getString(R.string.message_save_to_clipboard),
+       context.getString(R.string.action_save_to_clipboard),
        PendingIntent.getBroadcast(context, pin.getIdAsInt(),
         new Intent(context, OnClipReceiver.class)
          .putExtra(FragEditor.EXTRA_PIN_SPEC, pin),

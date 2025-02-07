@@ -9,15 +9,18 @@
    <string name="spinPriority">Priority</string>
    <string name="chkShowActions">Show notification actions</string>
    <string name="btnMoreSettings">More Settings</string>
+   <string name="ibtnItemMoveUp">Move Up</string>
+   <string name="ibtnItemMoveDown">Move Down</string>
+   <string name="lblItemOrder">Priority: %s</string>
 
    <string name="action_pin">Pin</string>
    <string name="action_cancel">Cancel</string>
    <string name="action_delete">Delete</string>
    <string name="action_delete_pins">Delete Pins…</string>
    <string name="action_order_pins">Arrange Pins…</string>
+   <string name="action_save_to_clipboard">Save to clipboard</string>
 
    <string name="message_clipped_pin">Pin has been copied to clipboard.</string>
-   <string name="message_save_to_clipboard">Save to clipboard</string>
    <string name="message_empty_title">The title has to contain text.</string>
    <string name="message_too_many">MicroPinner can only show 20 pins (5 per Priority)</string>
    <string name="requires_your_permission">MicroPinner requires your permission</string>
@@ -30,6 +33,5 @@
    <string name="priority_low">low</string>
    <string name="priority_high">high</string>
    <string name="priority_default">default</string>
-   <string name="ibtnItemMoveDown">Move Down</string>
-   <string name="ibtnItemMoveUp">Move Up</string>
+
 </resources>

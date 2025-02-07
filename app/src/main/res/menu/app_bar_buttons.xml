@@ -10,7 +10,7 @@
     app:showAsAction="ifRoom"
     />
    <item
-    android:id="@+id/btnDelete1"
+    android:id="@+id/btnDelete"
     android:title="@string/action_delete"
     android:icon="@drawable/ic_delete"
     android:orderInCategory="2"

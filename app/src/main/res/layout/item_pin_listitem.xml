@@ -11,7 +11,6 @@
  android:clickable="true"
  android:focusable="true"
  >
-   <!-- android:background="@android:drawable/menuitem_background" -->
    <CheckBox
     android:id="@+id/chkItemSelected"
     android:layout_width="wrap_content"
@@ -36,7 +35,7 @@
        tools:ignore="SpeakableTextPresentCheck"
        />
       <TextView
-       android:id="@+id/lblItemChannelName"
+       android:id="@+id/lblItemOrder"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:layout_marginTop="2dp"
@@ -54,6 +53,7 @@
        android:id="@+id/ibtnItemMoveUp"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
+       android:minHeight="48dp"
        android:src="@drawable/ic_arrow_up"
        android:contentDescription="@string/ibtnItemMoveUp"
        />
@@ -61,6 +61,7 @@
        android:id="@+id/ibtnItemMoveDown"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
+       android:minHeight="48dp"
        android:src="@drawable/ic_arrow_down"
        android:contentDescription="@string/ibtnItemMoveDown"
        />

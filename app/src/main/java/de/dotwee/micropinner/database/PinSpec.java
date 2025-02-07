@@ -92,12 +92,23 @@ public static String getChannelID(int priority, int order)
    return "p" + priority + "_" + order;
 }
 
+@SuppressLint("DefaultLocale")
 public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedStrings)
 {
    if(order == 0)
       return priorityLocalizedStrings.getItem(priority);
    else
-      return priorityLocalizedStrings.getItem(priority) + " " + (1 + order);
+      return priorityLocalizedStrings.getItem(priority) + String.format(" %d", 1 + order);
+}
+
+@SuppressLint("DefaultLocale")
+public String getOrderLocalizedString(ArrayAdapter<String> priorityLocalizedStrings, Integer max)
+{
+   if(max == null)
+      return priorityLocalizedStrings.getItem(priority);
+   else
+      return priorityLocalizedStrings.getItem(priority) +
+              String.format(" (%d/%d)", 1 + order, 1 + max);
 }
 
 public int getPriorityIndex()

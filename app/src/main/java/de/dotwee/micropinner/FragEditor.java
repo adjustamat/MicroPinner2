@@ -247,7 +247,7 @@ public void onPrepareMenu(Menu menu)
    item = menu.findItem(R.id.btnCancel);
    item.setVisible(editing == null);
    item.setEnabled(editing == null);
-   item = menu.findItem(R.id.btnDelete1);
+   item = menu.findItem(R.id.btnDelete);
    item.setVisible(editing != null);
    item.setEnabled(editing != null);
    item = menu.findItem(R.id.btnDeleteMode);

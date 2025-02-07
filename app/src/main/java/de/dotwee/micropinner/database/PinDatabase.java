@@ -150,14 +150,14 @@ public PinSpec writePin(PinSpec editing,
       int total = (int) DatabaseUtils.queryNumEntries(sdb, TABLE);
       if(total >= MAX_NOTIFICATIONS || orderWithinPrio >= MAX_PER_PRIO) {
          Log.i(TAG, "Cannot create new pin because there are " + orderWithinPrio +
-                     " pins with priority " + priorityIndex + ", and the total is " + total);
+                     " pins with priority " + priorityIndex + ", and the total is " + total +
+                     ". MAX: " + MAX_PER_PRIO + ", total " + MAX_NOTIFICATIONS);
          sdb.close();
          return null;
       }
       
-      // create new pin
+      // create new pin and get new ID from the database
       contentValues.put(COL_ORDER, orderWithinPrio);
-      // get new ID from the database
       long id = sdb.insert(TABLE, null, contentValues);
       Log.i(TAG, "Created new pin with id " + id);
       logRowCount(sdb);
