@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -65,8 +66,8 @@ private FragEditor()
 }
 
 private PinSpec editing = null;
-//private int order;
 private String channelID;
+private String channelName;
 
 private Spinner spinPriority;
 private EditText txtTitleAndContent;
@@ -120,56 +121,81 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    spinPriority.setAdapter(adapter);
    
    if(editing != null) {
-      // edit priority
+      // set priority
       spinPriority.setSelection(editing.getPriorityIndex(), false);
       
-      // edit title and content
+      // set title and content
       if(editing.getContent().isEmpty()) {
          txtTitleAndContent.setText(editing.getTitle());
       }
       else {
          txtTitleAndContent.setText(editing.getTitle() + "\n" + editing.getContent());
       }
+      channelName = PinSpec.getChannelName(editing.getPriorityIndex(), editing.getOrder(),
+       MainActivity.getPriorityLocalizedStrings(requireContext()));
    } // editing != null
    else { // editing == null
-      
       // load default value for checkbox
       chkShowActions.setChecked(
        PreferencesHandler.getInstance(requireContext()).isNotificationActionsEnabled()
       );
       
       // default priority for new pin
-      int priorityIndex = PinSpec.priorityToIndex(Notification.PRIORITY_DEFAULT);
-      spinPriority.setSelection(priorityIndex, false);
+      int defaultPrioIndex = PinSpec.priorityToIndex(Notification.PRIORITY_DEFAULT);
+      spinPriority.setSelection(defaultPrioIndex, false);
       
-      // create channel ID for new pin
-      int newOrderForPriority =
-       PinDatabase.getInstance(requireContext()).getNewOrderForPriority(priorityIndex);
-      channelID = PinSpec.getChannelID(priorityIndex, newOrderForPriority);
-      spinPriority.setOnItemSelectedListener(new OnItemSelectedListener()
+      // create channel information for new pin
+      int newOrder =
+       PinDatabase.getInstance(requireContext()).getNewOrderForPriority(defaultPrioIndex);
+      channelID = PinSpec.getChannelID(defaultPrioIndex, newOrder);
+      channelName = PinSpec.getChannelName(defaultPrioIndex, newOrder,
+       MainActivity.getPriorityLocalizedStrings(requireContext()));
+   } // editing == null
+   
+   // update channel information when changing priority
+   spinPriority.setOnItemSelectedListener(new OnItemSelectedListener()
+   {
+      @Override
+      public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
       {
-         @Override
-         public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-         {
-            int newOrderForPriority =
+         int newOrderForPriority = -1;
+         if(editing == null) {
+            newOrderForPriority =
              PinDatabase.getInstance(requireContext()).getNewOrderForPriority(position);
             channelID = PinSpec.getChannelID(position, newOrderForPriority);
          }
-         
-         @Override
-         public void onNothingSelected(AdapterView<?> parent)
-         {
-         }
-      });
-   } // editing == null
+         channelName = PinSpec.getChannelName(
+          position,
+          editing == null ? newOrderForPriority : editing.getOrder(),
+          MainActivity.getPriorityLocalizedStrings(requireContext())
+         );
+      }
+      
+      @Override
+      public void onNothingSelected(AdapterView<?> parent)
+      {
+      }
+   });
    
    // button takes user to channel settings
    Button btnMoreSettings = root.findViewById(R.id.btnMoreSettings);
    btnMoreSettings.setOnClickListener(v -> {
-      if(editing == null)
-         NotificationTools.openSettings(requireContext(), channelID);
-      else
-         NotificationTools.openSettings(requireContext(), editing.getNotificationChannelID());
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // NOUGAT == 24
+         if(editing == null)
+            NotificationTools.openSettings(requireContext(),
+             channelID, channelName, PinSpec.getImportance(spinPriority.getSelectedItemPosition()));
+         else
+            NotificationTools.openSettings(requireContext(),
+             editing.getNotificationChannelID(), channelName, editing.getImportance());
+      }
+      else { // pre-NOUGAT
+         if(editing == null)
+            NotificationTools.openSettings(requireContext(),
+             channelID, channelName, null);
+         else
+            NotificationTools.openSettings(requireContext(),
+             editing.getNotificationChannelID(), channelName, null);
+      }
    });
    
    return root;
@@ -247,7 +273,7 @@ public void onPrepareMenu(Menu menu)
    item = menu.findItem(R.id.btnCancel);
    item.setVisible(editing == null);
    item.setEnabled(editing == null);
-   item = menu.findItem(R.id.btnDelete1);
+   item = menu.findItem(R.id.btnDelete);
    item.setVisible(editing != null);
    item.setEnabled(editing != null);
    item = menu.findItem(R.id.btnDeleteMode);

@@ -9,15 +9,18 @@
    <string name="spinPriority">Priorité</string>
    <string name="chkShowActions">Afficher les actions de notification</string>
    <string name="btnMoreSettings">Autres paramètres</string>
+   <string name="ibtnItemMoveUp">Déplacer plus haut</string>
+   <string name="ibtnItemMoveDown">Déplacer plus bas</string>
+   <string name="lblItemOrder">Priorité: %s</string>
 
    <string name="action_pin">Épingler</string>
    <string name="action_cancel">Annuler</string>
    <string name="action_delete">Supprimer</string>
    <string name="action_delete_pins">Supprimer Épingles…</string>
    <string name="action_order_pins">Classer Épingles…</string>
+   <string name="action_save_to_clipboard">Copier dans le presse-papiers</string>
 
    <string name="message_clipped_pin">L\'épingle a été copiée dans le presse-papiers.</string>
-   <string name="message_save_to_clipboard">Copier dans le presse-papiers</string>
    <string name="message_empty_title">Le titre doit contenir du texte.</string>
    <string name="message_too_many">MicroPinner peut afficher seulement 20 épingles (5 par Priorité)</string>
    <string name="requires_your_permission">MicroPinner demande votre permission</string>

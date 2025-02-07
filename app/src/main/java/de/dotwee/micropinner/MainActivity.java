@@ -71,35 +71,37 @@ public boolean onUpMayFinish(boolean cancel)
 private boolean fragPopMayFinish()
 {
    if(fragBackstack.size() <= 1) {
-      return true;
-      // finish();
+      return true; // nothing to pop, may finish()
    }
    
-   // Frag removed =
+   // pop frag
    fragBackstack.remove(0);
    Frag current = fragBackstack.get(0);
    getSupportFragmentManager().beginTransaction()
     .replace(R.id.fragment, current)
     .commit();
    
-   invalidateActionBar(current);
+   // invalidate UI
+   updateActionBar(current);
    return false;
-}
-
-void invalidateActionBar(Frag currentFrag)
-{
-   currentFrag.onPrepareActionBar(getSupportActionBar());
-   invalidateMenu();
 }
 
 private void fragCommit(Frag frag)
 {
+   // push frag
    fragBackstack.add(0, frag);
    getSupportFragmentManager().beginTransaction()
     .replace(R.id.fragment, frag)
     .commit();
    
-   invalidateActionBar(frag);
+   // invalidate UI
+   updateActionBar(frag);
+}
+
+void updateActionBar(Frag currentFrag)
+{
+   currentFrag.onPrepareActionBar(getSupportActionBar());
+   invalidateMenu();
 }
 
 void showNewPin()
@@ -183,7 +185,7 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    case Intent.ACTION_MAIN:
       showList();
       break;
-   default: // case Intent.ACTION_DEFAULT: // ACTION_VIEW
+   default: // case Intent.ACTION_DEFAULT: // ACTION_DEFAULT == ACTION_VIEW
       // deserialize our pin from the intent
       PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
       if(pin == null) {
@@ -238,7 +240,7 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
    else if(id == R.id.btnNew) {
       showNewPin();
    }
-   else if(id == R.id.btnDelete1) {
+   else if(id == R.id.btnDelete) {
       Frag frag = fragBackstack.get(0);
       if(frag instanceof FragList) {
          FragList fragList = (FragList) frag;

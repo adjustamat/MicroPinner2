@@ -38,7 +38,6 @@ private FragList()
 }
 
 private final ListAdapter listAdapter = new ListAdapter();
-private boolean canOrder;
 private HashSet<PinSpec> selected;
 ArrayAdapter<String> priorityLocalizedStrings;
 
@@ -62,7 +61,7 @@ static class Holder
 {
    final CheckBox chkItemSelected;
    final TextView lblItemTitle;
-   final TextView lblItemChannelName;
+   final TextView lblItemOrder;
    final ImageButton ibtnItemMoveUp;
    final ImageButton ibtnItemMoveDown;
    
@@ -71,7 +70,7 @@ static class Holder
       super(itemView);
       chkItemSelected = itemView.findViewById(R.id.chkItemSelected);
       lblItemTitle = itemView.findViewById(R.id.lblItemTitle);
-      lblItemChannelName = itemView.findViewById(R.id.lblItemChannelName);
+      lblItemOrder = itemView.findViewById(R.id.lblItemOrder);
       ibtnItemMoveUp = itemView.findViewById(R.id.ibtnItemMoveUp);
       ibtnItemMoveDown = itemView.findViewById(R.id.ibtnItemMoveDown);
    }
@@ -82,6 +81,7 @@ class ListAdapter
 {
    final ArrayList<PinSpec> pins = new ArrayList<>();
    Integer[] maxOrder;
+   boolean canOrder;
    
    ListAdapter()
    {
@@ -117,13 +117,13 @@ class ListAdapter
    public void onBindViewHolder(@NonNull Holder holder, final int position)
    {
       final PinSpec pin = pins.get(position);
+      Integer max = maxOrder[position];
       
       boolean select = false;
       boolean up = false;
       boolean down = false;
       switch(mode) {
       case ORDER:
-         Integer max = maxOrder[position];
          up = max != null && pin.getOrder() > 0;
          down = max != null && pin.getOrder() < max;
          if(up)
@@ -167,23 +167,30 @@ class ListAdapter
                notifyItemRangeChanged(position, 2);
                
                // update order of system notifications
-               NotificationTools.notify(requireContext(), pin);
                NotificationTools.notify(requireContext(), pin2);
+               NotificationTools.notify(requireContext(), pin);
             });
          break;
       case DELETE:
-         select = selected.contains(pin);
+         select = selected != null && selected.contains(pin);
          break;
       }
       
       holder.lblItemTitle.setText(pin.getTitle());
-      holder.lblItemChannelName.setText(pin.getNotificationChannelName(priorityLocalizedStrings));
+      holder.lblItemOrder.setText(getString(
+       R.string.lblItemOrder,
+       pin.getPrioOrderDisplayString(priorityLocalizedStrings, max)
+      ));
       holder.ibtnItemMoveUp.setVisibility(up ? View.VISIBLE : View.INVISIBLE);
       holder.ibtnItemMoveDown.setVisibility(down ? View.VISIBLE : View.INVISIBLE);
       holder.chkItemSelected.setVisibility(mode == Mode.DELETE ? View.VISIBLE : View.GONE);
       holder.chkItemSelected.setChecked(select);
       holder.itemView.setActivated(select);
-      holder.itemView.setOnClickListener(v -> onClick(position));
+      
+      View.OnClickListener clickListener = v -> onClick(position);
+      holder.itemView.setOnClickListener(clickListener);
+      holder.lblItemTitle.setOnClickListener(clickListener);
+      holder.lblItemOrder.setOnClickListener(clickListener);
    }
    
    @NonNull
@@ -218,7 +225,7 @@ void setMode(Mode mode)
    if(mode != this.mode) {
       this.mode = mode;
       MainActivity activity = (MainActivity) requireActivity();
-      activity.invalidateActionBar(this);
+      activity.updateActionBar(this);
       if(mode != Mode.DELETE)
          selected = null;
       listAdapter.notifyItemRangeChanged(0, listAdapter.getItemCount());
@@ -271,6 +278,8 @@ private void updateButtons()
       Log.d(DBG, "updateButtons() - no context");
       return;
    }
+   Log.d(DBG, "updateButtons() - OK - mode is " + mode);
+   
    boolean normal = mode == Mode.NORMAL;
    
    // btnDelete1 enabled if there are selected pins
@@ -280,7 +289,7 @@ private void updateButtons()
    btnDeleteMode.setEnabled(normal && listAdapter.getItemCount() > 0);
    
    // btnOrderMode enabled if there are pins that can be rearranged
-   btnOrderMode.setEnabled(normal && canOrder);
+   btnOrderMode.setEnabled(normal && listAdapter.canOrder);
    
    // btnNew enabled unless there are too many pins
    int count = PinDatabase.getInstance(requireContext()).getCount();
@@ -299,7 +308,7 @@ public void onPrepareMenu(Menu menu)
    item.setVisible(false);
    item.setEnabled(false);
    
-   btnDelete1 = menu.findItem(R.id.btnDelete1);
+   btnDelete1 = menu.findItem(R.id.btnDelete);
    btnDelete1.setVisible(mode == Mode.DELETE);
    
    btnDeleteMode = menu.findItem(R.id.btnDeleteMode);
@@ -349,15 +358,18 @@ public void onClick(int position)
       else
          selected.add(pin);
       listAdapter.notifyItemChanged(position);
+      updateButtons();
       break;
    }
 }
 
 public void deleteSelectedPins()
 {
-   PinDatabase db = PinDatabase.getInstance(requireContext());
-   for(PinSpec pin : selected) {
-      db.deletePin(pin.getId());
+   if(selected != null && !selected.isEmpty()) {
+      PinDatabase db = PinDatabase.getInstance(requireContext());
+      for(PinSpec pin : selected) {
+         db.deletePin(pin.getId());
+      }
    }
    setMode(Mode.NORMAL);
    updateList();

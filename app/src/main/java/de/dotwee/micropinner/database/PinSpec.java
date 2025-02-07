@@ -82,11 +82,13 @@ public int getOrder()
    return order;
 }
 
+@NonNull
 public String getNotificationChannelID()
 {
    return getChannelID(priority, order);
 }
 
+@NonNull
 public static String getChannelID(int priority, int order)
 {
    return "p" + priority + "_" + order;
@@ -94,10 +96,27 @@ public static String getChannelID(int priority, int order)
 
 public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedStrings)
 {
+   return getChannelName(priority, order, priorityLocalizedStrings);
+}
+
+@SuppressLint("DefaultLocale")
+public static String getChannelName(int priorityIndex, int order,
+ ArrayAdapter<String> priorityLocalizedStrings)
+{
    if(order == 0)
+      return priorityLocalizedStrings.getItem(priorityIndex);
+   else
+      return priorityLocalizedStrings.getItem(priorityIndex) + String.format(" %d", 1 + order);
+}
+
+@SuppressLint("DefaultLocale")
+public String getPrioOrderDisplayString(ArrayAdapter<String> priorityLocalizedStrings, Integer max)
+{
+   if(max == null)
       return priorityLocalizedStrings.getItem(priority);
    else
-      return priorityLocalizedStrings.getItem(priority) + " " + (1 + order);
+      return priorityLocalizedStrings.getItem(priority) +
+              String.format(" (%d/%d)", 1 + order, 1 + max);
 }
 
 public int getPriorityIndex()
@@ -138,10 +157,9 @@ public int getPreOreoPriority()
 }
 
 @RequiresApi(Build.VERSION_CODES.N) // NOUGAT == 24
-public int getImportance()
+public static int getImportance(int priorityIndex)
 {
-   // this method actually only used when Build.VERSION.SDK_INT >= VERSION_CODES.O // OREO == 26
-   switch(priority) {
+   switch(priorityIndex) {
    case 0:
       return NotificationManager.IMPORTANCE_HIGH;
    case 1:
@@ -153,6 +171,13 @@ public int getImportance()
    default:
       throw new RuntimeException("illegal priority value");
    }
+}
+
+@RequiresApi(Build.VERSION_CODES.N) // NOUGAT == 24
+public int getImportance()
+{
+   // this method actually only used when Build.VERSION.SDK_INT >= VERSION_CODES.O // OREO == 26
+   return getImportance(priority);
 }
 
 public boolean isShowActions()
