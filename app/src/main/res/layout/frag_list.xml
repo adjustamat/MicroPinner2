@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
  xmlns:app="http://schemas.android.com/apk/res-auto"
  xmlns:tools="http://schemas.android.com/tools"
- android:orientation="vertical"
  android:layout_width="match_parent"
  android:layout_height="match_parent"
- app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
- tools:context=".FragList"
- tools:listitem="@layout/item_pin_listitem"
- />
+ tools:context=".ui.FragList"
+ >
+   <de.dotwee.micropinner.ui.RecyclerList
+    android:orientation="vertical"
+    android:id="@+id/lstList"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+    tools:listitem="@layout/item_pin_listitem"
+    />
+   <TextView
+    android:id="@+id/lblEmptyList"
+    android:text="@string/message_empty_list"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+    app:drawableTopCompat="@drawable/ic_new"
+    tools:drawableTop="@drawable/ic_new"
+    />
+</FrameLayout>

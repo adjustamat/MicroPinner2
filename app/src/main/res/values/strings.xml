@@ -20,6 +20,7 @@
    <string name="action_order_pins">Arrange Pins…</string>
    <string name="action_save_to_clipboard">Save to clipboard</string>
 
+   <string name="message_empty_list">Create your first pin by clicking \'New Pin\'</string>
    <string name="message_clipped_pin">Pin has been copied to clipboard.</string>
    <string name="message_empty_title">The title has to contain text.</string>
    <string name="message_too_many">MicroPinner can only show 20 pins (5 per Priority)</string>

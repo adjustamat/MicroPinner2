@@ -20,6 +20,7 @@
    <string name="action_order_pins">Sortieren Stifte…</string>
    <string name="action_save_to_clipboard">In die Zwischenablage kopieren</string>
 
+   <string name="message_empty_list">Erstellen Sie Ihren ersten Stift, indem Sie auf \'Neuer Stift\' klicken</string>
    <string name="message_clipped_pin">Pin wurde in die Zwischenablage kopiert.</string>
    <string name="message_empty_title">Du musst einen Titel eingeben.</string>
    <string name="message_too_many">MicroPinner kann nur 20 Stifte anzeigen (5 pro Priorität)</string>
@@ -33,4 +34,5 @@
    <string name="priority_low">Niedrig</string>
    <string name="priority_high">Hoch</string>
    <string name="priority_default">Normal</string>
+
 </resources>

@@ -5,4 +5,5 @@
    <color name="accent">#CDFC39</color>
    <color name="background">#303030</color>
    <color name="background_gradient">#3B412F</color>
+   <color name="background_tint_activated">#556F9A3F</color>
 </resources>

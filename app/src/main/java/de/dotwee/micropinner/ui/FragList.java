@@ -1,4 +1,4 @@
-package de.dotwee.micropinner;
+package de.dotwee.micropinner.ui;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,9 +19,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import de.dotwee.micropinner.MainActivity;
+import de.dotwee.micropinner.NotificationTools;
+import de.dotwee.micropinner.R;
+import de.dotwee.micropinner.database.Pin;
 import de.dotwee.micropinner.database.PinDatabase;
-import de.dotwee.micropinner.database.PinSpec;
 
 public class FragList
  extends Frag
@@ -38,7 +42,7 @@ private FragList()
 }
 
 private final ListAdapter listAdapter = new ListAdapter();
-private HashSet<PinSpec> selected;
+private HashSet<Pin> selected;
 ArrayAdapter<String> priorityLocalizedStrings;
 
 @Override
@@ -48,12 +52,167 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    View root = inflater.inflate(R.layout.frag_list, container, false);
    
    priorityLocalizedStrings = MainActivity.getPriorityLocalizedStrings(requireContext());
-   
-   RecyclerView lstList = (RecyclerView) root;
+   RecyclerList lstList = root.findViewById(R.id.lstList);
+   lstList.setEmptyView(root.findViewById(R.id.lblEmptyList));
    lstList.setAdapter(listAdapter);
    updateList();
    
    return root;
+}
+
+public enum Mode
+{
+   NORMAL, ORDER, DELETE
+}
+
+private Mode mode = Mode.NORMAL;
+private MenuItem btnDelete;
+private MenuItem btnDeleteMode;
+private MenuItem btnOrderMode;
+private MenuItem btnNew;
+
+public void setMode(Mode mode)
+{
+   if(mode != this.mode) {
+      this.mode = mode;
+      MainActivity activity = (MainActivity) requireActivity();
+      activity.updateActionBar(this);
+      if(mode != Mode.DELETE)
+         selected = null;
+      listAdapter.notifyItemRangeChanged(0, listAdapter.getItemCount());
+   }
+}
+
+@Override
+public boolean mayCloseFragment(boolean cancel)
+{
+   // If not NORMAL mode, switch back to NORMAL mode.
+   if(mode != Mode.NORMAL) {
+      setMode(Mode.NORMAL);
+      return false;
+   }
+   
+   // Fragment may close when in NORMAL mode
+   return true;
+}
+
+@Override
+public void onPrepareActionBar(ActionBar bar)
+{
+   switch(mode) {
+   case NORMAL:
+      // show logo as up, show title
+      bar.setHomeActionContentDescription(R.string.app_name);
+      bar.setTitle(R.string.app_name);
+      break;
+   case ORDER:
+      // show done as up (no cancel button needed)
+      bar.setHomeActionContentDescription(R.string.action_cancel);
+      bar.setHomeAsUpIndicator(R.drawable.ic_done);
+      break;
+   case DELETE:
+      // show cancel as up (btnDelete1 is used for deleting)
+      bar.setHomeActionContentDescription(R.string.action_cancel);
+      bar.setHomeAsUpIndicator(R.drawable.ic_cancel);
+      break;
+   }
+   bar.setDisplayHomeAsUpEnabled(mode != Mode.NORMAL);
+   bar.setDisplayUseLogoEnabled(mode == Mode.NORMAL);
+   // no title in special modes
+   bar.setDisplayShowTitleEnabled(mode == Mode.NORMAL);
+}
+
+@Override
+public void onPrepareMenu(Menu menu)
+{
+   boolean normal = mode == Mode.NORMAL;
+   
+   menu.findItem(R.id.btnCancel).setVisible(false);
+   
+   btnDelete = menu.findItem(R.id.btnDelete);
+   btnDelete.setVisible(mode == Mode.DELETE);
+   
+   btnDeleteMode = menu.findItem(R.id.btnDeleteMode);
+   btnDeleteMode.setVisible(normal);
+   
+   btnOrderMode = menu.findItem(R.id.btnOrderMode);
+   btnOrderMode.setVisible(normal);
+   
+   btnNew = menu.findItem(R.id.btnNew);
+   btnNew.setVisible(normal);
+   
+   updateMenuButtons();
+}
+
+private void updateMenuButtons()
+{
+   if(btnNew == null) {
+      Log.d(DBG, "updateMenuButtons() - called before onPrepareMenu");
+      return;
+   }
+   if(getContext() == null) {
+      Log.d(DBG, "updateMenuButtons() - no context");
+      return;
+   }
+   Log.d(DBG, "updateMenuButtons() - OK - mode is: " + mode);
+   
+   boolean normal = mode == Mode.NORMAL;
+   
+   // btnDelete1 enabled if there are selected pins
+   btnDelete.setEnabled(selected != null && !selected.isEmpty());
+   
+   // btnDeleteMode enabled if there are pins to delete
+   btnDeleteMode.setEnabled(normal && listAdapter.getItemCount() > 0);
+   
+   // btnOrderMode enabled if there are pins that can be rearranged
+   btnOrderMode.setEnabled(normal && listAdapter.canOrder);
+   
+   // btnNew enabled unless there are too many pins
+   int count = PinDatabase.getInstance(requireContext()).getCount();
+//   if(count >= PinDatabase.MAX_NOTIFICATIONS) {
+//      Toast.makeText(requireContext(), R.string.message_too_many, Toast.LENGTH_SHORT).show();
+//   }
+   btnNew.setEnabled(normal && count < PinDatabase.MAX_NOTIFICATIONS);
+}
+
+private void updateList()
+{
+   Context ctx = getContext();
+   if(ctx == null) {
+      Log.d(DBG, "updateList() - no context");
+      return;
+   }
+   List<Pin> allPins = PinDatabase.getInstance(ctx).getAllPins();
+   listAdapter.update(allPins);
+   updateMenuButtons();
+}
+
+public void onClick(int position)
+{
+   switch(mode) {
+   // edit pin on click in NORMAL mode
+   case NORMAL:
+      MainActivity activity = (MainActivity) requireActivity();
+      activity.showEditPin(listAdapter.pins.get(position));
+      break;
+   
+   // select (or deselect) pin on click in DELETE mode
+   case DELETE:
+      Pin pin = listAdapter.pins.get(position);
+      if(selected == null) {
+         selected = new HashSet<>(2);
+         selected.add(pin);
+      }
+      else if(selected.contains(pin))
+         selected.remove(pin);
+      else
+         selected.add(pin);
+      listAdapter.notifyItemChanged(position);
+      updateMenuButtons();
+      break;
+   
+   // do nothing on click in ORDER mode
+   }
 }
 
 static class Holder
@@ -64,22 +223,24 @@ static class Holder
    final TextView lblItemOrder;
    final ImageButton ibtnItemMoveUp;
    final ImageButton ibtnItemMoveDown;
+   final LinearLayout llvLabels;
    
    public Holder(@NonNull View itemView)
    {
       super(itemView);
       chkItemSelected = itemView.findViewById(R.id.chkItemSelected);
+      llvLabels = itemView.findViewById(R.id.llvLabels);
       lblItemTitle = itemView.findViewById(R.id.lblItemTitle);
       lblItemOrder = itemView.findViewById(R.id.lblItemOrder);
       ibtnItemMoveUp = itemView.findViewById(R.id.ibtnItemMoveUp);
       ibtnItemMoveDown = itemView.findViewById(R.id.ibtnItemMoveDown);
    }
-}
+} // Holder
 
 class ListAdapter
  extends RecyclerView.Adapter<Holder>
 {
-   final ArrayList<PinSpec> pins = new ArrayList<>();
+   final ArrayList<Pin> pins = new ArrayList<>();
    Integer[] maxOrder;
    boolean canOrder;
    
@@ -88,7 +249,7 @@ class ListAdapter
    }
    
    @SuppressLint("NotifyDataSetChanged")
-   void update(List<PinSpec> allPins)
+   void update(List<Pin> allPins)
    {
       maxOrder = new Integer[allPins.size()];
       canOrder = false;
@@ -96,7 +257,7 @@ class ListAdapter
       pins.addAll(allPins);
       int i = 0;
       int prevPrio = -1;
-      for(PinSpec pin : allPins) {
+      for(Pin pin : allPins) {
          if(pin.getPriorityIndex() == prevPrio) {
             // there are two pins with the same priority.
             canOrder = true;
@@ -116,7 +277,7 @@ class ListAdapter
    @Override
    public void onBindViewHolder(@NonNull Holder holder, final int position)
    {
-      final PinSpec pin = pins.get(position);
+      final Pin pin = pins.get(position);
       Integer max = maxOrder[position];
       
       boolean select = false;
@@ -129,7 +290,7 @@ class ListAdapter
          if(up)
             holder.ibtnItemMoveUp.setOnClickListener(v -> {
                // change order in list
-               PinSpec pin2 = pins.set(position - 1, pin);
+               Pin pin2 = pins.set(position - 1, pin);
                pins.set(position, pin2);
                int order = pin.getOrder();
                pin.setOrder(pin2.getOrder());
@@ -137,8 +298,8 @@ class ListAdapter
                
                // update database
                PinDatabase.getInstance(requireContext()).changeOrderForPins(
-                pin.getId(), pin.getOrder(),
-                pin2.getId(), order
+                pin.getID(), pin.getOrder(),
+                pin2.getID(), order
                );
                
                // show changes in RecyclerView
@@ -151,7 +312,7 @@ class ListAdapter
          if(down)
             holder.ibtnItemMoveDown.setOnClickListener(v -> {
                // change order in list
-               PinSpec pin2 = pins.set(position + 1, pin);
+               Pin pin2 = pins.set(position + 1, pin);
                pins.set(position, pin2);
                int order = pin.getOrder();
                pin.setOrder(pin2.getOrder());
@@ -159,8 +320,8 @@ class ListAdapter
                
                // update database
                PinDatabase.getInstance(requireContext()).changeOrderForPins(
-                pin.getId(), pin.getOrder(),
-                pin2.getId(), order
+                pin.getID(), pin.getOrder(),
+                pin2.getID(), order
                );
                
                // show changes in RecyclerView
@@ -186,11 +347,11 @@ class ListAdapter
       holder.chkItemSelected.setVisibility(mode == Mode.DELETE ? View.VISIBLE : View.GONE);
       holder.chkItemSelected.setChecked(select);
       holder.itemView.setActivated(select);
-      
       View.OnClickListener clickListener = v -> onClick(position);
-      holder.itemView.setOnClickListener(clickListener);
+      holder.llvLabels.setOnClickListener(clickListener);
       holder.lblItemTitle.setOnClickListener(clickListener);
       holder.lblItemOrder.setOnClickListener(clickListener);
+      holder.chkItemSelected.setOnClickListener(clickListener);
    }
    
    @NonNull
@@ -211,164 +372,18 @@ class ListAdapter
    {
       return pins.size();
    }
-}
+} // ListAdapter
 
-enum Mode
-{
-   NORMAL, ORDER, DELETE
-}
-
-private Mode mode = Mode.NORMAL;
-
-void setMode(Mode mode)
-{
-   if(mode != this.mode) {
-      this.mode = mode;
-      MainActivity activity = (MainActivity) requireActivity();
-      activity.updateActionBar(this);
-      if(mode != Mode.DELETE)
-         selected = null;
-      listAdapter.notifyItemRangeChanged(0, listAdapter.getItemCount());
-   }
-}
-
-@Override
-public boolean onUpMayFinish(boolean cancel)
-{
-   if(mode != Mode.NORMAL) {
-      setMode(Mode.NORMAL);
-      return false;
-   }
-   return true;
-}
-
-@Override
-public void onPrepareActionBar(ActionBar bar)
-{
-   switch(mode) {
-   case NORMAL:
-      // show logo as up, show title
-      bar.setHomeActionContentDescription(R.string.app_name);
-      bar.setTitle(R.string.app_name);
-      break;
-   case ORDER:
-      // show done as up (no cancel button needed)
-      bar.setHomeActionContentDescription(android.R.string.ok);
-      bar.setHomeAsUpIndicator(R.drawable.ic_done);
-      break;
-   case DELETE:
-      // show cancel as up (btnDelete1 is used for deleting)
-      bar.setHomeActionContentDescription(R.string.action_cancel);
-      bar.setHomeAsUpIndicator(R.drawable.ic_cancel);
-      break;
-   }
-   bar.setDisplayHomeAsUpEnabled(mode != Mode.NORMAL);
-   bar.setDisplayUseLogoEnabled(mode == Mode.NORMAL);
-   // no title in special modes
-   bar.setDisplayShowTitleEnabled(mode == Mode.NORMAL);
-}
-
-private void updateButtons()
-{
-   if(btnNew == null) {
-      Log.d(DBG, "updateButtons() - called before onPrepareMenu");
-      return;
-   }
-   if(getContext() == null) {
-      Log.d(DBG, "updateButtons() - no context");
-      return;
-   }
-   Log.d(DBG, "updateButtons() - OK - mode is " + mode);
-   
-   boolean normal = mode == Mode.NORMAL;
-   
-   // btnDelete1 enabled if there are selected pins
-   btnDelete1.setEnabled(selected != null && !selected.isEmpty());
-   
-   // btnDeleteMode enabled if there are pins to delete
-   btnDeleteMode.setEnabled(normal && listAdapter.getItemCount() > 0);
-   
-   // btnOrderMode enabled if there are pins that can be rearranged
-   btnOrderMode.setEnabled(normal && listAdapter.canOrder);
-   
-   // btnNew enabled unless there are too many pins
-   int count = PinDatabase.getInstance(requireContext()).getCount();
-//   if(count >= PinDatabase.MAX_NOTIFICATIONS) {
-//      Toast.makeText(requireContext(), R.string.message_too_many, Toast.LENGTH_SHORT).show();
-//   }
-   btnNew.setEnabled(normal && count < PinDatabase.MAX_NOTIFICATIONS);
-}
-
-@Override
-public void onPrepareMenu(Menu menu)
-{
-   boolean normal = mode == Mode.NORMAL;
-   MenuItem item;
-   item = menu.findItem(R.id.btnCancel);
-   item.setVisible(false);
-   item.setEnabled(false);
-   
-   btnDelete1 = menu.findItem(R.id.btnDelete);
-   btnDelete1.setVisible(mode == Mode.DELETE);
-   
-   btnDeleteMode = menu.findItem(R.id.btnDeleteMode);
-   btnDeleteMode.setVisible(normal);
-   
-   btnOrderMode = menu.findItem(R.id.btnOrderMode);
-   btnOrderMode.setVisible(normal);
-   
-   btnNew = menu.findItem(R.id.btnNew);
-   btnNew.setVisible(normal);
-   
-   updateButtons();
-}
-
-private MenuItem btnDelete1;
-private MenuItem btnDeleteMode;
-private MenuItem btnOrderMode;
-private MenuItem btnNew;
-
-private void updateList()
-{
-   Context ctx = getContext();
-   if(ctx == null) {
-      Log.d(DBG, "updateList() - no context");
-      return;
-   }
-   List<PinSpec> allPins = PinDatabase.getInstance(ctx).getAllPins();
-   listAdapter.update(allPins);
-   updateButtons();
-}
-
-public void onClick(int position)
-{
-   switch(mode) {
-   case NORMAL:
-      MainActivity activity = (MainActivity) requireActivity();
-      activity.showEditPin(listAdapter.pins.get(position));
-      break;
-   case DELETE:
-      PinSpec pin = listAdapter.pins.get(position);
-      if(selected == null) {
-         selected = new HashSet<>(2);
-         selected.add(pin);
-      }
-      else if(selected.contains(pin))
-         selected.remove(pin);
-      else
-         selected.add(pin);
-      listAdapter.notifyItemChanged(position);
-      updateButtons();
-      break;
-   }
-}
-
-public void deleteSelectedPins()
+/**
+ * Delete selected pins from database, if any. Also go back to NORMAL mode.
+ * @param db
+ *  the PinDatabase
+ */
+public void deleteFromDatabase(PinDatabase db)
 {
    if(selected != null && !selected.isEmpty()) {
-      PinDatabase db = PinDatabase.getInstance(requireContext());
-      for(PinSpec pin : selected) {
-         db.deletePin(pin.getId());
+      for(Pin pin : selected) {
+         db.deletePin(pin.getID());
       }
    }
    setMode(Mode.NORMAL);

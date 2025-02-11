@@ -8,9 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
-import de.dotwee.micropinner.FragEditor;
+import de.dotwee.micropinner.ui.FragEditor;
 import de.dotwee.micropinner.R;
-import de.dotwee.micropinner.database.PinSpec;
+import de.dotwee.micropinner.database.Pin;
 
 /**
  * Created by Lukas Wolfsteiner on 08.10.2015.
@@ -18,7 +18,7 @@ import de.dotwee.micropinner.database.PinSpec;
  * This class represents a broadcast receiver for
  * {@link android.app.Notification} OnAction intents.
  * <p>
- * Intents should contain a serialized {@link PinSpec}
+ * Intents should contain a serialized {@link Pin}
  * as extra.
  * <p>
  * If yes, the onReceive method will copy the serialized
@@ -34,10 +34,10 @@ private final static String TAG = OnClipReceiver.class.getSimpleName();
 public void onReceive(@NonNull Context context, @NonNull Intent intent)
 {
    
-   PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
+   Pin pin = (Pin) intent.getSerializableExtra(FragEditor.EXTRA_SERIALIZABLE_PIN);
    
    if(pin != null) {
-      Log.i(TAG, "Received clipIntent from pin " + pin.getId());
+      Log.i(TAG, "Received clipIntent from pin " + pin.getID());
       
       ClipboardManager clipboard =
        (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);

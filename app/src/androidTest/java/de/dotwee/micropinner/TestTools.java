@@ -11,8 +11,8 @@ import android.support.test.espresso.intent.Intents;
 import android.support.test.rule.ActivityTestRule;
 import android.util.Log;
 import de.dotwee.micropinner.database.PinDatabase;
-import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.tools.PreferencesHandler;
+import de.dotwee.micropinner.database.Pin;
+import de.dotwee.micropinner.ui.FragEditor;
 
 /**
  * Created by lukas on 20.07.2016.
@@ -20,32 +20,32 @@ import de.dotwee.micropinner.tools.PreferencesHandler;
 public final class TestTools
 {
 private static final String DBG = "TestTools";
-public static final PinSpec[] testPins = {
- new PinSpec(0, "Second (high)", "high priority order 1, ID=zero",
-  PinSpec.priorityToIndex(Notification.PRIORITY_HIGH), 1, true),
- new PinSpec(1, "Third (default)", "default priority, ID=one",
-  PinSpec.priorityToIndex(Notification.PRIORITY_DEFAULT), 0, true),
- new PinSpec(2, "First (high)", "high priority order 0, ID=two",
-  PinSpec.priorityToIndex(Notification.PRIORITY_HIGH), 0, false),
- new PinSpec(3, "Fourth (low)", "low priority, ID=three",
-  PinSpec.priorityToIndex(Notification.PRIORITY_LOW), 0, true),
+public static final Pin[] testPins = {
+ new Pin(0, "Second (high)", "high priority order 1, ID=zero",
+  Pin.priorityToIndex(Notification.PRIORITY_HIGH), 1, true),
+ new Pin(1, "Third (default)", "default priority, ID=one",
+  Pin.priorityToIndex(Notification.PRIORITY_DEFAULT), 0, true),
+ new Pin(2, "First (high)", "high priority order 0, ID=two",
+  Pin.priorityToIndex(Notification.PRIORITY_HIGH), 0, false),
+ new Pin(3, "Fourth (low)", "low priority, ID=three",
+  Pin.priorityToIndex(Notification.PRIORITY_LOW), 0, true),
 };
 
 public static void testDatabase(Context ctx)
 {
    PinDatabase db = PinDatabase.getInstance(ctx);
-   for(PinSpec pin : testPins) {
+   for(Pin pin : testPins) {
       db.writePin(null, pin.getTitle(), pin.getContent(),
        pin.getPriorityIndex(), pin.isShowActions());
    }
-   List<PinSpec> allPins = db.getAllPins(); // ordered by PRIORITY then ORDER
-   Iterator<PinSpec> iterator = allPins.iterator();
+   List<Pin> allPins = db.getAllPins(); // ordered by PRIORITY then ORDER
+   Iterator<Pin> iterator = allPins.iterator();
    
    // order by PRIORITY then ORDER:
-   Arrays.sort(testPins, new Comparator<PinSpec>()
+   Arrays.sort(testPins, new Comparator<Pin>()
    {
       @Override
-      public int compare(PinSpec o1, PinSpec o2)
+      public int compare(Pin o1, Pin o2)
       {
          if(o1.getPriorityIndex() == o2.getPriorityIndex()) {
             if(o1.getOrder() == o2.getOrder())
@@ -60,7 +60,7 @@ public static void testDatabase(Context ctx)
       }
    });
    
-   for(PinSpec testPin : testPins) {
+   for(Pin testPin : testPins) {
       Log.d(DBG, "testDatabase() - " + testPin.test(iterator.next()));
    }
    assert !(iterator.hasNext());
@@ -107,12 +107,12 @@ public static Intent launchNewPin()
    return launchIntent;
 }
 
-public static Intent launchEditPin(PinSpec pin)
+public static Intent launchEditPin(Pin pin)
 {
    Intents.init();
    Intent launchIntent = new Intent(Intent.ACTION_VIEW);
    launchIntent.setClassName("de.dotwee.micropinner", "de.dotwee.micropinner.MainActivity");
-   launchIntent.putExtra(FragEditor.EXTRA_PIN_SPEC, pin);
+   launchIntent.putExtra(FragEditor.EXTRA_SERIALIZABLE_PIN, pin);
    return launchIntent;
 }
 }

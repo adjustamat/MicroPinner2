@@ -132,11 +132,11 @@ public int getNewOrderForPriority(int priority)
  * @param editing
  *  The pin that was edited, or null to create a new pin.
  */
-public PinSpec writePin(PinSpec editing,
+public Pin writePin(Pin editing,
  String title, String content, int priorityIndex, boolean showActions)
 {
    SQLiteDatabase sdb = getWritableDatabase();
-   PinSpec ret;
+   Pin ret;
    ContentValues contentValues = new ContentValues();
    contentValues.put(COL_TITLE, title);
    contentValues.put(COL_CONTENT, content);
@@ -158,16 +158,16 @@ public PinSpec writePin(PinSpec editing,
       
       // create new pin and get new ID from the database
       contentValues.put(COL_ORDER, orderWithinPrio);
-      long id = sdb.insert(TABLE, null, contentValues);
+      int id = (int) sdb.insert(TABLE, null, contentValues);
       Log.i(TAG, "Created new pin with id " + id);
       logRowCount(sdb);
-      ret = new PinSpec(id, title, content, priorityIndex, orderWithinPrio, showActions);
+      ret = new Pin(id, title, content, priorityIndex, orderWithinPrio, showActions);
    }
    else {
       
       // update edited pin
       sdb.update(TABLE, contentValues,
-       COL_ID + "=" + editing.getId(), null);
+       COL_ID + "=" + editing.getID(), null);
       ret = editing;
       ret.setData(title, content, priorityIndex, showActions);
    }
@@ -199,21 +199,21 @@ public void deleteAll()
 }
 
 /**
- * Returns all pins in the database, ordered by PRIORITY, then ORDER.
+ * Returns all pins in the database, ordered by PRIORITY and then ORDER.
  * @return A LinkedList with all the pins
  */
 @NonNull
-public List<PinSpec> getAllPins()
+public List<Pin> getAllPins()
 {
    SQLiteDatabase sdb = getReadableDatabase();
-   List<PinSpec> list = new LinkedList<>();
+   List<Pin> list = new LinkedList<>();
    Cursor cursor = sdb.query(TABLE, ALL_COLUMNS,
     null, null,
     null, null, SQL_ORDER_BY);
    while(cursor.moveToNext()) {
 //      ContentValues contentValues = new ContentValues();
 //      DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
-      long id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID));
+      int id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID));
       String title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE));
       String content = cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT));
       int priority = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PRIORITY));
@@ -226,8 +226,8 @@ public List<PinSpec> getAllPins()
 //      int order = contentValues.getAsInteger(COL_ORDER);
 //      boolean showActions = (contentValues.getAsInteger(COL_SHOW_ACTIONS) != 0);
       
-      PinSpec pinSpec = new PinSpec(id, title, content, priority, order, showActions);
-      list.add(pinSpec);
+      Pin pin = new Pin(id, title, content, priority, order, showActions);
+      list.add(pin);
    }
    cursor.close();
    sdb.close();

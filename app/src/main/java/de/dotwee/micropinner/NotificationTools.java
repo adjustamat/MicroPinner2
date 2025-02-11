@@ -11,13 +11,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
+import de.dotwee.micropinner.database.Pin;
 import de.dotwee.micropinner.database.PinDatabase;
-import de.dotwee.micropinner.database.PinSpec;
 import de.dotwee.micropinner.receiver.OnCancelReceiver;
 import de.dotwee.micropinner.receiver.OnClipReceiver;
+import de.dotwee.micropinner.ui.FragEditor;
 
 /**
  * Created by lukas on 10.08.2016.
@@ -26,32 +26,18 @@ public class NotificationTools
 {
 private static final String TAG = NotificationTools.class.getSimpleName();
 
-public static final String ACTION_SETTINGS;
-public static final String EXTRA_SETTINGS_PKG;
-
-static {
-   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // OREO == 26
-      ACTION_SETTINGS = Settings.ACTION_APP_NOTIFICATION_SETTINGS;
-      EXTRA_SETTINGS_PKG = Settings.EXTRA_APP_PACKAGE;
-   }
-   else {
-      ACTION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS";
-      EXTRA_SETTINGS_PKG = "android.provider.extra.APP_PACKAGE";
-   }
-}
-
 @NonNull
-private static PendingIntent getEditorIntent(@NonNull Context ctx, @NonNull PinSpec pin)
+private static PendingIntent getEditorIntent(@NonNull Context ctx, @NonNull Pin pin)
 {
    // intent for starting Activity MainActivity (edit the pin)
    Intent resultIntent = new Intent(Intent.ACTION_VIEW, null, ctx, MainActivity.class);
-   resultIntent.putExtra(FragEditor.EXTRA_PIN_SPEC, pin);
+   resultIntent.putExtra(FragEditor.EXTRA_SERIALIZABLE_PIN, pin);
    resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
    return PendingIntent.getActivity(ctx, 0, resultIntent,
     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 }
 
-public static void notify(@NonNull Context ctx, @NonNull PinSpec pin)
+public static void notify(@NonNull Context ctx, @NonNull Pin pin)
 {
    NotificationManager notificationManager =
     (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -83,10 +69,10 @@ public static void notify(@NonNull Context ctx, @NonNull PinSpec pin)
      .setContentIntent(getEditorIntent(ctx, pin))
      
      // make sure the android system doesn't remove us - see OnCancelReceiver.
-     .setDeleteIntent(PendingIntent.getBroadcast(ctx, pin.getIdAsInt(),
+     .setDeleteIntent(PendingIntent.getBroadcast(ctx, pin.getIDAsInt(),
       new Intent(ctx, OnCancelReceiver.class)
        .setAction("notification_cancelled")
-       .putExtra(FragEditor.EXTRA_PIN_SPEC, pin),
+       .putExtra(FragEditor.EXTRA_SERIALIZABLE_PIN, pin),
       PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE));
    
    // title is required, but content is not
@@ -100,9 +86,9 @@ public static void notify(@NonNull Context ctx, @NonNull PinSpec pin)
    if(pin.isShowActions()) {
       builder.addAction(R.drawable.ic_action_clip,
        ctx.getString(R.string.action_save_to_clipboard),
-       PendingIntent.getBroadcast(ctx, pin.getIdAsInt(),
+       PendingIntent.getBroadcast(ctx, pin.getIDAsInt(),
         new Intent(ctx, OnClipReceiver.class)
-         .putExtra(FragEditor.EXTRA_PIN_SPEC, pin),
+         .putExtra(FragEditor.EXTRA_SERIALIZABLE_PIN, pin),
         PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE));
    }
    
@@ -121,15 +107,14 @@ public static void notify(@NonNull Context ctx, @NonNull PinSpec pin)
    public static final int FLAG_NO_DISMISS = 0x00002000;*/
 //   notification.flags |= 0x00002000;
    
-   Log.i(TAG, "Send notification with pin id " + pin.getId() + " to system");
-   notificationManager.notify(pin.getIdAsInt(), notification);
+   Log.i(TAG, "Send notification with pin id " + pin.getID() + " to system");
+   notificationManager.notify(pin.getIDAsInt(), notification);
 }
 
 public static void restoreAllPins(Context ctx)
 {
-   final List<PinSpec> pins = PinDatabase.getInstance(ctx).getAllPins();
-   for(PinSpec pin : pins) {
-      
+   List<Pin> pins = PinDatabase.getInstance(ctx).getAllPins();
+   for(Pin pin : pins) {
       // create a notification from the object
       notify(ctx, pin);
    }
@@ -146,44 +131,13 @@ public static void restoreAllPins(Context ctx)
  * @param importance
  *  the NotificationChannel's importance
  */
-private static void createChannel(NotificationManager notificationManager,
+public static void createChannel(NotificationManager notificationManager,
  String id, String name, int importance)
 {
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // OREO == 26
-      NotificationChannel channel = new NotificationChannel(
-       id,
-       name,
-       importance
-      );
+      NotificationChannel channel = new NotificationChannel(id, name, importance);
       channel.setSound(null, null);
       notificationManager.createNotificationChannel(channel);
    }
-}
-
-public static void openSettings(Context ctx,
- String id, String name, Integer importance)
-{
-   // first create channel if possible
-   if(importance != null) {
-      createChannel(
-       (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE),
-       id, name, importance
-      );
-   }
-   
-   Intent intent;
-   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && id != null) { // OREO == 26
-      // open notification settings for the specified channel
-      intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
-      intent.putExtra(Settings.EXTRA_CHANNEL_ID, id);
-   }
-   else {
-      // open notification settings for this app
-      intent = new Intent(ACTION_SETTINGS);
-   }
-   intent.putExtra(EXTRA_SETTINGS_PKG, ctx.getPackageName());
-   intent.putExtra("app_package", ctx.getPackageName());
-   intent.putExtra("app_uid", ctx.getApplicationInfo().uid);
-   ctx.startActivity(intent);
 }
 }

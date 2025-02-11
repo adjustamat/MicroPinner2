@@ -5,6 +5,7 @@ import android.preference.PreferenceManager;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import de.dotwee.micropinner.PreferencesHandler;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +77,7 @@ public void testIsNotificationActionsEnabled()
    assertFalse(preferencesHandler.isNotificationActionsEnabled());
    
    // tell preference handler to enable the advanced layout
-   preferencesHandler.setNotificationActionsEnabled(true);
+   preferencesHandler.setShowActionsEnabled(true);
    
    // should be enabled now
    assertTrue(preferencesHandler.isNotificationActionsEnabled());

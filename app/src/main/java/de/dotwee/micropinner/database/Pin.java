@@ -9,13 +9,10 @@ import android.app.NotificationManager;
 import android.os.Build;
 import android.widget.ArrayAdapter;
 
-/**
- * Created by lukas on 10.08.2016.
- */
-public class PinSpec
+public class Pin
  implements Serializable
 {
-private final long id;
+private final int id;
 private @NonNull String title;
 private @NonNull String content;
 
@@ -24,7 +21,7 @@ private boolean showActions;
 private int priority;
 private int order;
 
-public PinSpec(long id,
+public Pin(int id,
  @NonNull String title, @NonNull String content,
  int priority, int order, boolean showActions)
 {
@@ -50,12 +47,12 @@ public void setOrder(int order)
    this.order = order;
 }
 
-public long getId()
+public long getID()
 {
    return id;
 }
 
-public int getIdAsInt()
+public int getIDAsInt()
 {
    return (int) id;
 }
@@ -88,15 +85,15 @@ public String getNotificationChannelID()
    return getChannelID(priority, order);
 }
 
+public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedStrings)
+{
+   return getChannelName(priority, order, priorityLocalizedStrings);
+}
+
 @NonNull
 public static String getChannelID(int priority, int order)
 {
    return "p" + priority + "_" + order;
-}
-
-public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedStrings)
-{
-   return getChannelName(priority, order, priorityLocalizedStrings);
 }
 
 @SuppressLint("DefaultLocale")
@@ -208,7 +205,7 @@ public String toString()
 @SuppressLint("DefaultLocale")
 public final String test(Object o)
 {
-   PinSpec other = (PinSpec) o;
+   Pin other = (Pin) o;
    if(!equals(o))
       return String.format("test ID different: %d != %d", id, other.id);
    if(!title.equals(other.title))
@@ -229,8 +226,8 @@ public final String test(Object o)
 public final boolean equals(Object o)
 {
    if(this == o) return true;
-   if(!(o instanceof PinSpec)) return false;
-   PinSpec other = (PinSpec) o;
+   if(!(o instanceof Pin)) return false;
+   Pin other = (Pin) o;
    return id == other.id;
 }
 

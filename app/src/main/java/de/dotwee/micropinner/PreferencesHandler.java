@@ -1,14 +1,10 @@
-package de.dotwee.micropinner.tools;
+package de.dotwee.micropinner;
 
 import androidx.annotation.NonNull;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-/**
- * Created by lukas on 18.08.2015 - 16:11
- * for project MicroPinner.
- */
 public class PreferencesHandler
 {
 private static final String PREF_FIRST_USE = "pref_firstuse";
@@ -47,7 +43,7 @@ public boolean isNotificationActionsEnabled()
    return preferences.getBoolean(PREF_SHOW_NOTIFICATION_ACTIONS, false);
 }
 
-public void setNotificationActionsEnabled(boolean b)
+public void setShowActionsEnabled(boolean b)
 {
    preferences.edit().putBoolean(PREF_SHOW_NOTIFICATION_ACTIONS, b).apply();
 }

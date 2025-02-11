@@ -1,7 +1,6 @@
 package de.dotwee.micropinner;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,7 +8,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
@@ -20,9 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import de.dotwee.micropinner.FragList.Mode;
-import de.dotwee.micropinner.database.PinSpec;
-import de.dotwee.micropinner.tools.PreferencesHandler;
+import de.dotwee.micropinner.database.Pin;
+import de.dotwee.micropinner.database.PinDatabase;
+import de.dotwee.micropinner.ui.Frag;
+import de.dotwee.micropinner.ui.FragEditor;
+import de.dotwee.micropinner.ui.FragList;
+import de.dotwee.micropinner.ui.FragList.Mode;
 
 /**
  * Created by Lukas Wolfsteiner on 29.10.2015.
@@ -44,12 +45,12 @@ static {
    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 }
 
-private final List<Frag> fragBackstack = new LinkedList<>();
+private final LinkedList<Frag> backStack = new LinkedList<>();
 
 @Override
 public void onBackPressed()
 {
-   if(onUpMayFinish(true))
+   if(onUpMayFinish(false))
       finish();
 }
 
@@ -63,20 +64,24 @@ public boolean onSupportNavigateUp()
 
 public boolean onUpMayFinish(boolean cancel)
 {
-   if(!fragBackstack.get(0).onUpMayFinish(cancel))
+   // first ask the Fragment if it may be closed
+   if(!backStack.getFirst().mayCloseFragment(cancel))
       return false;
-   return fragPopMayFinish();
+   // go back to the previous fragment
+   return popBackMayFinish();
 }
 
-private boolean fragPopMayFinish()
+private boolean popBackMayFinish()
 {
-   if(fragBackstack.size() <= 1) {
+   if(backStack.size() <= 1) {
       return true; // nothing to pop, may finish()
    }
    
-   // pop frag
-   fragBackstack.remove(0);
-   Frag current = fragBackstack.get(0);
+   // pop a fragment from the stack
+   backStack.removeFirst();
+   
+   // return to previous fragment
+   Frag current = backStack.getFirst();
    getSupportFragmentManager().beginTransaction()
     .replace(R.id.fragment, current)
     .commit();
@@ -88,8 +93,8 @@ private boolean fragPopMayFinish()
 
 private void fragCommit(Frag frag)
 {
-   // push frag
-   fragBackstack.add(0, frag);
+   // push the fragment onto the stack
+   backStack.addFirst(frag);
    getSupportFragmentManager().beginTransaction()
     .replace(R.id.fragment, frag)
     .commit();
@@ -98,7 +103,7 @@ private void fragCommit(Frag frag)
    updateActionBar(frag);
 }
 
-void updateActionBar(Frag currentFrag)
+public void updateActionBar(Frag currentFrag)
 {
    currentFrag.onPrepareActionBar(getSupportActionBar());
    invalidateMenu();
@@ -109,7 +114,7 @@ void showNewPin()
    fragCommit(FragEditor.getNewCreatingInstance());
 }
 
-void showEditPin(PinSpec pin)
+public void showEditPin(Pin pin)
 {
    fragCommit(FragEditor.getNewEditingInstance(pin));
 }
@@ -155,7 +160,7 @@ public boolean onCreateOptionsMenu(Menu menu)
 @Override
 public boolean onPrepareOptionsMenu(Menu menu)
 {
-   fragBackstack.get(0).onPrepareMenu(menu);
+   backStack.getFirst().onPrepareMenu(menu);
    return true;
 }
 
@@ -170,11 +175,12 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    setContentView(R.layout.activity_main);
    
    ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-   bar.setBackgroundDrawable(ResourcesCompat.getDrawable(
-    getResources(), R.drawable.bg_actionbar, getTheme()
-   ));
+   
+//   bar.setBackgroundDrawable(ResourcesCompat.getDrawable(
+//    getResources(), R.drawable.bg_actionbar, getTheme()
+//   ));
+
 //   bar.setHideOnContentScrollEnabled(true);
-//   bar.setDisplayShowTitleEnabled(true);
    
    // restore state
    Intent intent = getIntent();
@@ -187,7 +193,7 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
       break;
    default: // case Intent.ACTION_DEFAULT: // ACTION_DEFAULT == ACTION_VIEW
       // deserialize our pin from the intent
-      PinSpec pin = (PinSpec) intent.getSerializableExtra(FragEditor.EXTRA_PIN_SPEC);
+      Pin pin = (Pin) intent.getSerializableExtra(FragEditor.EXTRA_SERIALIZABLE_PIN);
       if(pin == null) {
          // fallback if ACTION_DEFAULT instead of ACTION_MAIN was used to launch app
          showList();
@@ -241,25 +247,19 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
       showNewPin();
    }
    else if(id == R.id.btnDelete) {
-      Frag frag = fragBackstack.get(0);
-      if(frag instanceof FragList) {
-         FragList fragList = (FragList) frag;
-         // delete all selected pins from database
-         fragList.deleteSelectedPins();
-      }
-      else {
-         FragEditor fragEditor = (FragEditor) frag;
-         // delete frag.editing from database
-         fragEditor.deletePin();
-      }
+      Frag frag = backStack.getFirst();
+      // Delete from database:
+      // FragEditor deletes the pin being edited.
+      // FragList deletes all selected pins.
+      frag.deleteFromDatabase(PinDatabase.getInstance(this));
    }
    else if(id == R.id.btnDeleteMode) {
-      FragList frag = (FragList) fragBackstack.get(0);
-      frag.setMode(Mode.DELETE);
+      FragList fragList = (FragList) backStack.getFirst();
+      fragList.setMode(Mode.DELETE);
    }
    else if(id == R.id.btnOrderMode) {
-      FragList frag = (FragList) fragBackstack.get(0);
-      frag.setMode(Mode.ORDER);
+      FragList fragList = (FragList) backStack.getFirst();
+      fragList.setMode(Mode.ORDER);
    }
    else {
       return super.onOptionsItemSelected(item);
