@@ -52,8 +52,15 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    View root = inflater.inflate(R.layout.frag_list, container, false);
    
    priorityLocalizedStrings = MainActivity.getPriorityLocalizedStrings(requireContext());
+   
+   View lblEmptyList = root.findViewById(R.id.lblEmptyList);
+   lblEmptyList.setOnClickListener(v -> {
+      MainActivity activity = (MainActivity) requireActivity();
+      activity.showNewPin();
+   });
+   
    RecyclerList lstList = root.findViewById(R.id.lstList);
-   lstList.setEmptyView(root.findViewById(R.id.lblEmptyList));
+   lstList.setEmptyView(lblEmptyList);
    lstList.setAdapter(listAdapter);
    updateList();
    

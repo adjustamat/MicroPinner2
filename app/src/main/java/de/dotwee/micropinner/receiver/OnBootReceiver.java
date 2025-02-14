@@ -34,7 +34,7 @@ public void onReceive(@NonNull Context context, @Nullable Intent intent)
    if(VERSION.SDK_INT < VERSION_CODES.M || // MARSHMALLOW == 23
        PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
         context, MainActivity.PERMISSION_POST_NOTI)) {
-      MainActivity.hasPermission = true;
+      NotificationTools.hasPermission = true;
       NotificationTools.restoreAllPins(context);
    }
 }

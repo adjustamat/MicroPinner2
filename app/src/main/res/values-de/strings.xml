@@ -24,7 +24,7 @@
    <string name="message_clipped_pin">Pin wurde in die Zwischenablage kopiert.</string>
    <string name="message_empty_title">Du musst einen Titel eingeben.</string>
    <string name="message_too_many">MicroPinner kann nur 20 Stifte anzeigen (5 pro Priorität)</string>
-   <string name="requires_your_permission">MicroPinner braucht Ihre Erlaubnis</string>
+   <string name="message_require_permission">MicroPinner braucht Ihre Erlaubnis</string>
 
    <string name="visibility_public">Normal</string>
    <string name="visibility_private">Privat</string>

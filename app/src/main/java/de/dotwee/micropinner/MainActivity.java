@@ -1,10 +1,8 @@
 package de.dotwee.micropinner;
 
 import java.util.LinkedList;
-import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -33,7 +31,6 @@ public class MainActivity
 {
 //private static final String DBG = "MainActivity";
 public static final String PERMISSION_POST_NOTI;
-public static boolean hasPermission = false;
 
 static {
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU == 33
@@ -109,7 +106,7 @@ public void updateActionBar(Frag currentFrag)
    invalidateMenu();
 }
 
-void showNewPin()
+public void showNewPin()
 {
    fragCommit(FragEditor.getNewCreatingInstance());
 }
@@ -174,23 +171,17 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    
    setContentView(R.layout.activity_main);
    
-   ActionBar bar = Objects.requireNonNull(getSupportActionBar());
-   
-//   bar.setBackgroundDrawable(ResourcesCompat.getDrawable(
-//    getResources(), R.drawable.bg_actionbar, getTheme()
-//   ));
-
-//   bar.setHideOnContentScrollEnabled(true);
-   
-   // restore state
+   // set or restore state
    Intent intent = getIntent();
    switch(intent.getAction()) {
    case Intent.ACTION_CREATE_NOTE:
       showNewPin();
       break;
+      
    case Intent.ACTION_MAIN:
       showList();
       break;
+      
    default: // case Intent.ACTION_DEFAULT: // ACTION_DEFAULT == ACTION_VIEW
       // deserialize our pin from the intent
       Pin pin = (Pin) intent.getSerializableExtra(FragEditor.EXTRA_SERIALIZABLE_PIN);
@@ -207,13 +198,13 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
        PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
         this, PERMISSION_POST_NOTI)) {
       if(shouldShowRequestPermissionRationale(PERMISSION_POST_NOTI)) {
-         Toast.makeText(this, R.string.requires_your_permission, Toast.LENGTH_SHORT)
+         Toast.makeText(this, R.string.message_require_permission, Toast.LENGTH_SHORT)
           .show();
       }
       requestPermissions(new String[] {PERMISSION_POST_NOTI}, 1);
    }
    else {
-      hasPermission = true;
+      NotificationTools.hasPermission = true;
       NotificationTools.restoreAllPins(this);
    }
 }
@@ -275,7 +266,7 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
    for(int i = 0; i < permissions.length; i++) {
       if(grantResults[i] == PackageManager.PERMISSION_GRANTED &&
           permissions[i].equals(permission.POST_NOTIFICATIONS)) {
-         hasPermission = true;
+         NotificationTools.hasPermission = true;
          NotificationTools.restoreAllPins(this);
       }
    }

@@ -68,9 +68,8 @@ private FragEditor()
 }
 
 private Pin editing = null;
-//private String channelID;
-//private String channelName;
 
+ArrayAdapter<String> priorityLocalizedStrings;
 private Spinner spinPriority;
 private EditText txtTitleAndContent;
 private CheckBox chkShowActions;
@@ -119,11 +118,11 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
    );
    
    // load choices for spinPriority
-   ArrayAdapter<String> adapter = MainActivity.getPriorityLocalizedStrings(ctx);
-   adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-   spinPriority.setAdapter(adapter);
+   priorityLocalizedStrings = MainActivity.getPriorityLocalizedStrings(ctx);
+   priorityLocalizedStrings.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+   spinPriority.setAdapter(priorityLocalizedStrings);
    
-   if(editing != null) { // Creating new pin
+   if(editing != null) { // Editing existing pin
       // set priority
       spinPriority.setSelection(editing.getPriorityIndex(), false);
       
@@ -134,11 +133,9 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
       else {
          txtTitleAndContent.setText(editing.getTitle() + "\n" + editing.getContent());
       }
-//      channelName = Pin.getChannelName(editing.getPriorityIndex(), editing.getOrder(),
-//       MainActivity.getPriorityLocalizedStrings(ctx));
-   } // Creating new pin (editing != null)
+   } // Editing existing pin (editing != null)
    
-   else { // Editing existing pin (editing == null)
+   else { // Creating new pin (editing == null)
       // load default value for chkShowActions
       chkShowActions.setChecked(
        PreferencesHandler.getInstance(ctx).isNotificationActionsEnabled()
@@ -147,39 +144,7 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
       // default priority for new pin
       int defaultPrioIndex = Pin.priorityToIndex(Notification.PRIORITY_DEFAULT);
       spinPriority.setSelection(defaultPrioIndex, false);
-      
-      // create channel information for new pin
-//      int newOrder =
-//       PinDatabase.getInstance(ctx).getNewOrderForPriority(defaultPrioIndex);
-//      channelID = Pin.getChannelID(defaultPrioIndex, newOrder);
-//      channelName = Pin.getChannelName(defaultPrioIndex, newOrder,
-//       MainActivity.getPriorityLocalizedStrings(ctx));
-   } // Editing existing pin (editing == null)
-   
-   // update channel information when changing priority with Spinner
-//   spinPriority.setOnItemSelectedListener(new OnItemSelectedListener()
-//   {
-//      @Override
-//      public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-//      {
-//         int newOrderForPriority = -1;
-//         if(editing == null) {
-//            newOrderForPriority =
-//             PinDatabase.getInstance(requireContext()).getNewOrderForPriority(position);
-//            channelID = Pin.getChannelID(position, newOrderForPriority);
-//         }
-//         channelName = Pin.getChannelName(
-//          position,
-//          editing == null ? newOrderForPriority : editing.getOrder(),
-//          MainActivity.getPriorityLocalizedStrings(requireContext())
-//         );
-//      }
-//
-//      @Override
-//      public void onNothingSelected(AdapterView<?> parent)
-//      {
-//      }
-//   });
+   } // Creating new pin (editing == null)
    
    // btnMoreSettings takes user to Notification settings
    Button btnMoreSettings = root.findViewById(R.id.btnMoreSettings);
@@ -194,18 +159,17 @@ public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup c
       }
       
       // show android's notification settings for this app (if running on OREO or later,
-      // create and show settings for the editing Pin's NotificationChannel)
+      // create and show settings for the Pin's NotificationChannel)
       Intent intent;
       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // OREO == 26
-         // first, create or update channel
+         // OREO or later: first, create or update channel
          String channelID = editing.getNotificationChannelID();
          NotificationTools.createChannel(
           (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE),
           channelID,
-          editing.getNotificationChannelName(MainActivity.getPriorityLocalizedStrings(ctx)),
+          editing.getNotificationChannelName(priorityLocalizedStrings),
           editing.getImportance()
          );
-         
          // OREO or later: open notification settings for the specified channel
          intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
          intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelID);
@@ -244,16 +208,16 @@ public void onSaveInstanceState(@NonNull Bundle outState)
 @Override
 public boolean mayCloseFragment(boolean cancel)
 {
-   // When cancelling, do not save.
+   // When cancelling, do not save, just close.
    if(cancel)
       return true;
    
-   // try saving the pin
+   // try saving the pin. if unable to create pin, do not close.
    editing = savePin();
    if(editing == null)
       return false;
    
-   // show the pin, then close this fragment
+   // show the edited Notification, then close this fragment
    NotificationTools.notify(requireContext(), editing);
    return true;
 }

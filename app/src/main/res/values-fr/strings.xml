@@ -24,7 +24,7 @@
    <string name="message_clipped_pin">L\'épingle a été copiée dans le presse-papiers.</string>
    <string name="message_empty_title">Le titre doit contenir du texte.</string>
    <string name="message_too_many">MicroPinner peut afficher seulement 20 épingles (5 par Priorité)</string>
-   <string name="requires_your_permission">MicroPinner demande votre permission</string>
+   <string name="message_require_permission">MicroPinner demande votre permission</string>
 
    <string name="visibility_public">public</string>
    <string name="visibility_private">privé</string>

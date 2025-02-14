@@ -26,6 +26,8 @@ public class NotificationTools
 {
 private static final String TAG = NotificationTools.class.getSimpleName();
 
+public static boolean hasPermission = false;
+
 @NonNull
 private static PendingIntent getEditorIntent(@NonNull Context ctx, @NonNull Pin pin)
 {
@@ -42,8 +44,8 @@ public static void notify(@NonNull Context ctx, @NonNull Pin pin)
    NotificationManager notificationManager =
     (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
    
-   if(!MainActivity.hasPermission) {
-      Toast.makeText(ctx, R.string.requires_your_permission, Toast.LENGTH_LONG).show();
+   if(!hasPermission) {
+      Toast.makeText(ctx, R.string.message_require_permission, Toast.LENGTH_LONG).show();
       return;
    }
    
