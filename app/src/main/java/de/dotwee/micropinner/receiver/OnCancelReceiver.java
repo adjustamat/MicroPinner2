@@ -25,6 +25,6 @@ public void onReceive(@NonNull Context context, @NonNull Intent intent)
    }
    
    // show pin again
-   NotificationTools.notify(context, pin);
+   NotificationTools.showPin(context, pin);
 }
 }

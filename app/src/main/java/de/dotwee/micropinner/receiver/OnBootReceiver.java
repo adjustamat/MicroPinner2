@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
-import de.dotwee.micropinner.MainActivity;
 import de.dotwee.micropinner.NotificationTools;
 
 public class OnBootReceiver
@@ -32,10 +31,11 @@ public void onReceive(@NonNull Context context, @Nullable Intent intent)
    }
    
    if(VERSION.SDK_INT < VERSION_CODES.M || // MARSHMALLOW == 23
-       PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
-        context, MainActivity.PERMISSION_POST_NOTI)) {
+       PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(context,
+        NotificationTools.PERMISSION_POST_NOTI)
+   ) {
       NotificationTools.hasPermission = true;
-      NotificationTools.restoreAllPins(context);
+      NotificationTools.showAllPins(context);
    }
 }
 }

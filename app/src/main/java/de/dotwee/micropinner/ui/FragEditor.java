@@ -59,6 +59,7 @@ public static FragEditor getNewCreatingInstance()
 public static FragEditor getNewEditingInstance(Pin editing)
 {
    FragEditor ret = new FragEditor();
+   Log.d(DBG, "getNewEditingInstance() - ID = " + editing.getID());
    ret.editing = editing;
    return ret;
 }
@@ -208,7 +209,7 @@ public void onSaveInstanceState(@NonNull Bundle outState)
 @Override
 public boolean mayCloseFragment(boolean cancel)
 {
-   // When cancelling, do not save, just close.
+   // When cancelling: do not save, just close this fragment.
    if(cancel)
       return true;
    
@@ -218,7 +219,7 @@ public boolean mayCloseFragment(boolean cancel)
       return false;
    
    // show the edited Notification, then close this fragment
-   NotificationTools.notify(requireContext(), editing);
+   NotificationTools.showPin(requireContext(), editing);
    return true;
 }
 
@@ -284,8 +285,8 @@ public void onPrepareActionBar(ActionBar bar)
 @Override
 public void onPrepareMenu(Menu menu)
 {
-   // If creating new pin, show cancel
-   menu.findItem(R.id.btnCancel).setVisible(editing == null);
+   // show cancel
+   menu.findItem(R.id.btnCancel).setVisible(true);
    
    // If editing existing pin, show delete
    MenuItem btnDelete = menu.findItem(R.id.btnDelete);

@@ -3,6 +3,7 @@ package de.dotwee.micropinner;
 import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -24,9 +25,19 @@ import de.dotwee.micropinner.ui.FragEditor;
  */
 public class NotificationTools
 {
-private static final String TAG = NotificationTools.class.getSimpleName();
+private static final String DBG = "NotificationTools";
 
+public static final String PERMISSION_POST_NOTI;
 public static boolean hasPermission = false;
+
+static {
+   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU == 33
+      PERMISSION_POST_NOTI = Manifest.permission.POST_NOTIFICATIONS;
+   }
+   else {
+      PERMISSION_POST_NOTI = "android.permission.POST_NOTIFICATIONS";
+   }
+}
 
 @NonNull
 private static PendingIntent getEditorIntent(@NonNull Context ctx, @NonNull Pin pin)
@@ -39,7 +50,7 @@ private static PendingIntent getEditorIntent(@NonNull Context ctx, @NonNull Pin 
     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 }
 
-public static void notify(@NonNull Context ctx, @NonNull Pin pin)
+public static void showPin(@NonNull Context ctx, @NonNull Pin pin)
 {
    NotificationManager notificationManager =
     (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -50,7 +61,7 @@ public static void notify(@NonNull Context ctx, @NonNull Pin pin)
    }
    
    if(notificationManager == null) {
-      Log.w(TAG, "NotificationManager is null! Couldn't send notification!");
+      Log.w(DBG, "NotificationManager is null! Couldn't send notification!");
       return;
    }
    
@@ -109,16 +120,16 @@ public static void notify(@NonNull Context ctx, @NonNull Pin pin)
    public static final int FLAG_NO_DISMISS = 0x00002000;*/
 //   notification.flags |= 0x00002000;
    
-   Log.i(TAG, "Send notification with pin id " + pin.getID() + " to system");
+   Log.i(DBG, "Send notification with pin id " + pin.getID() + " to system");
    notificationManager.notify(pin.getIDAsInt(), notification);
 }
 
-public static void restoreAllPins(Context ctx)
+public static void showAllPins(Context ctx)
 {
    List<Pin> pins = PinDatabase.getInstance(ctx).getAllPins();
    for(Pin pin : pins) {
       // create a notification from the object
-      notify(ctx, pin);
+      showPin(ctx, pin);
    }
 }
 

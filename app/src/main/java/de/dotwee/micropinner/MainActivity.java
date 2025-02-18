@@ -6,12 +6,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
-import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -29,18 +29,7 @@ import de.dotwee.micropinner.ui.FragList.Mode;
 public class MainActivity
  extends AppCompatActivity
 {
-//private static final String DBG = "MainActivity";
-public static final String PERMISSION_POST_NOTI;
-
-static {
-   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU == 33
-      PERMISSION_POST_NOTI = permission.POST_NOTIFICATIONS;
-   }
-   else {
-      PERMISSION_POST_NOTI = "android.permission.POST_NOTIFICATIONS";
-   }
-   AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-}
+private static final String DBG = "MainActivity";
 
 private final LinkedList<Frag> backStack = new LinkedList<>();
 
@@ -161,10 +150,13 @@ public boolean onPrepareOptionsMenu(Menu menu)
    return true;
 }
 
+private boolean justCreated = false;
+
 @Override
 protected void onCreate(@Nullable Bundle savedInstanceState)
 {
    super.onCreate(savedInstanceState);
+   AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
    
    PreferencesHandler preferencesHandler = PreferencesHandler.getInstance(this);
    preferencesHandler.isFirstUse();
@@ -177,11 +169,11 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
    case Intent.ACTION_CREATE_NOTE:
       showNewPin();
       break;
-      
+   
    case Intent.ACTION_MAIN:
       showList();
       break;
-      
+   
    default: // case Intent.ACTION_DEFAULT: // ACTION_DEFAULT == ACTION_VIEW
       // deserialize our pin from the intent
       Pin pin = (Pin) intent.getSerializableExtra(FragEditor.EXTRA_SERIALIZABLE_PIN);
@@ -194,18 +186,48 @@ protected void onCreate(@Nullable Bundle savedInstanceState)
       }
    }
    
+   // show all pins
    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
        PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
-        this, PERMISSION_POST_NOTI)) {
-      if(shouldShowRequestPermissionRationale(PERMISSION_POST_NOTI)) {
+        this, NotificationTools.PERMISSION_POST_NOTI)) {
+      Log.d(DBG, "onCreate() - Permission denied :(");
+      if(shouldShowRequestPermissionRationale(NotificationTools.PERMISSION_POST_NOTI)) {
+         Log.d(DBG, "onCreate() - should show Request Permission Rationale!");
          Toast.makeText(this, R.string.message_require_permission, Toast.LENGTH_SHORT)
           .show();
       }
-      requestPermissions(new String[] {PERMISSION_POST_NOTI}, 1);
+      requestPermissions(new String[] {NotificationTools.PERMISSION_POST_NOTI}, 1);
    }
    else {
       NotificationTools.hasPermission = true;
-      NotificationTools.restoreAllPins(this);
+      NotificationTools.showAllPins(this);
+   }
+   justCreated = true;
+}
+
+@Override
+protected void onResume()
+{
+   super.onResume();
+   if(justCreated) {
+      justCreated = false;
+      return;
+   }
+   // show all pins
+   if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && // MARSHMALLOW == 23 // TIRAMISU == 33
+       PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(
+        this, NotificationTools.PERMISSION_POST_NOTI)) {
+      Log.d(DBG, "onCreate() - Permission denied :(");
+      if(shouldShowRequestPermissionRationale(NotificationTools.PERMISSION_POST_NOTI)) {
+         Log.d(DBG, "onCreate() - should show Request Permission Rationale!");
+         Toast.makeText(this, R.string.message_require_permission, Toast.LENGTH_SHORT)
+          .show();
+      }
+      requestPermissions(new String[] {NotificationTools.PERMISSION_POST_NOTI}, 1);
+   }
+   else {
+      NotificationTools.hasPermission = true;
+      NotificationTools.showAllPins(this);
    }
 }
 
@@ -259,17 +281,21 @@ public boolean onOptionsItemSelected(@NonNull MenuItem item)
 }
 
 @Override
-public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
- @NonNull int[] grantResults)
+public void onRequestPermissionsResult(int requestCode,
+ @NonNull String[] permissions, @NonNull int[] grantResults)
 {
    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
    for(int i = 0; i < permissions.length; i++) {
       if(grantResults[i] == PackageManager.PERMISSION_GRANTED &&
-          permissions[i].equals(permission.POST_NOTIFICATIONS)) {
+          permissions[i].equals(NotificationTools.PERMISSION_POST_NOTI)) {
          NotificationTools.hasPermission = true;
-         NotificationTools.restoreAllPins(this);
+         Log.d(DBG, "onRequestPermissionsResult() - Permission Granted :)");
+         NotificationTools.showAllPins(this);
+         return;
       }
    }
+   Toast.makeText(this, R.string.message_require_permission, Toast.LENGTH_SHORT)
+    .show();
 }
 
 public static ArrayAdapter<String> getPriorityLocalizedStrings(Context ctx)

@@ -93,21 +93,21 @@ public String getNotificationChannelName(ArrayAdapter<String> priorityLocalizedS
 @NonNull
 public static String getChannelID(int priority, int order)
 {
-   return "p" + priority + "_" + order;
+   return "p" + priority;// + "_" + order;
 }
 
 @SuppressLint("DefaultLocale")
 public static String getChannelName(int priorityIndex, int order,
  ArrayAdapter<String> priorityLocalizedStrings)
 {
-   if(order == 0)
-      return priorityLocalizedStrings.getItem(priorityIndex);
-   else
-      return priorityLocalizedStrings.getItem(priorityIndex) + String.format(" %d", 1 + order);
+//   if(order == 0)
+   return priorityLocalizedStrings.getItem(priorityIndex);
+//   else
+//      return priorityLocalizedStrings.getItem(priorityIndex) + String.format(" %d", 1 + order);
 }
 
 @SuppressLint("DefaultLocale")
-public String getPrioOrderDisplayString(ArrayAdapter<String> priorityLocalizedStrings, Integer max)
+public String getOrderDisplayString(ArrayAdapter<String> priorityLocalizedStrings, Integer max)
 {
    if(max == null)
       return priorityLocalizedStrings.getItem(priority);

@@ -281,6 +281,7 @@ class ListAdapter
       notifyDataSetChanged();
    }
    
+   @SuppressLint("SetTextI18n")
    @Override
    public void onBindViewHolder(@NonNull Holder holder, final int position)
    {
@@ -313,8 +314,8 @@ class ListAdapter
                notifyItemRangeChanged(position - 1, 2);
                
                // update order of system notifications
-               NotificationTools.notify(requireContext(), pin);
-               NotificationTools.notify(requireContext(), pin2);
+               NotificationTools.showPin(requireContext(), pin);
+               NotificationTools.showPin(requireContext(), pin2);
             });
          if(down)
             holder.ibtnItemMoveDown.setOnClickListener(v -> {
@@ -335,8 +336,8 @@ class ListAdapter
                notifyItemRangeChanged(position, 2);
                
                // update order of system notifications
-               NotificationTools.notify(requireContext(), pin2);
-               NotificationTools.notify(requireContext(), pin);
+               NotificationTools.showPin(requireContext(), pin2);
+               NotificationTools.showPin(requireContext(), pin);
             });
          break;
       case DELETE:
@@ -344,10 +345,10 @@ class ListAdapter
          break;
       }
       
-      holder.lblItemTitle.setText(pin.getTitle());
+      holder.lblItemTitle.setText(pin.getID() + " " + pin.getTitle());
       holder.lblItemOrder.setText(getString(
        R.string.lblItemOrder,
-       pin.getPrioOrderDisplayString(priorityLocalizedStrings, max)
+       pin.getOrderDisplayString(priorityLocalizedStrings, max)
       ));
       holder.ibtnItemMoveUp.setVisibility(up ? View.VISIBLE : View.INVISIBLE);
       holder.ibtnItemMoveDown.setVisibility(down ? View.VISIBLE : View.INVISIBLE);
@@ -355,6 +356,7 @@ class ListAdapter
       holder.chkItemSelected.setChecked(select);
       holder.itemView.setActivated(select);
       View.OnClickListener clickListener = v -> onClick(position);
+      holder.itemView.setOnClickListener(clickListener);
       holder.llvLabels.setOnClickListener(clickListener);
       holder.lblItemTitle.setOnClickListener(clickListener);
       holder.lblItemOrder.setOnClickListener(clickListener);

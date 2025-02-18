@@ -17,7 +17,7 @@ import android.util.Log;
 public class PinDatabase
  extends SQLiteOpenHelper
 {
-private static final String TAG = PinDatabase.class.getSimpleName();
+private static final String DBG = PinDatabase.class.getSimpleName();
 
 // maximums
 public static final int MAX_NOTIFICATIONS = 20;
@@ -47,8 +47,8 @@ private static final String[] ALL_COLUMNS = {
 };
 
 // database info
-private static final String DATABASE_NAME = "comments.db";
-private static final int DATABASE_VERSION = 300;// BuildConfig.VERSION_CODE
+private static final String DATABASE_NAME = "pinner.db";
+private static final int DATABASE_VERSION = 301;// BuildConfig.VERSION_CODE
 
 private static PinDatabase instance = null;
 
@@ -72,7 +72,7 @@ public void onCreate(SQLiteDatabase sdb)
 {
    sdb.execSQL("CREATE TABLE "
                 + TABLE + "("
-                + COL_ID + " int primary key, "
+                + COL_ID + " INTEGER PRIMARY KEY, "
                 + COL_TITLE + " text, "
                 + COL_CONTENT + " text, "
                 + COL_PRIORITY + " int, "
@@ -85,7 +85,7 @@ public void onCreate(SQLiteDatabase sdb)
 @Override
 public void onUpgrade(SQLiteDatabase sdb, int oldVersion, int newVersion)
 {
-   Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion +
+   Log.w(DBG, "Upgrading database from version " + oldVersion + " to " + newVersion +
                ", which destroys all old data");
    
    sdb.execSQL("DROP TABLE IF EXISTS " + TABLE);
@@ -149,7 +149,7 @@ public Pin writePin(Pin editing,
       int orderWithinPrio = getNewOrderForPriority(sdb, priorityIndex);
       int total = (int) DatabaseUtils.queryNumEntries(sdb, TABLE);
       if(total >= MAX_NOTIFICATIONS || orderWithinPrio >= MAX_PER_PRIO) {
-         Log.i(TAG, "Cannot create new pin because there are " + orderWithinPrio +
+         Log.i(DBG, "Cannot create new pin because there are " + orderWithinPrio +
                      " pins with priority " + priorityIndex + ", and the total is " + total +
                      ". MAX: " + MAX_PER_PRIO + ", total " + MAX_NOTIFICATIONS);
          sdb.close();
@@ -159,7 +159,7 @@ public Pin writePin(Pin editing,
       // create new pin and get new ID from the database
       contentValues.put(COL_ORDER, orderWithinPrio);
       int id = (int) sdb.insert(TABLE, null, contentValues);
-      Log.i(TAG, "Created new pin with id " + id);
+      Log.i(DBG, "Created new pin with id " + id);
       logRowCount(sdb);
       ret = new Pin(id, title, content, priorityIndex, orderWithinPrio, showActions);
    }
@@ -185,7 +185,7 @@ public void deletePin(long id)
 {
    SQLiteDatabase sdb = getWritableDatabase();
    boolean success = sdb.delete(TABLE, COL_ID + "=" + id, null) > 0;
-   Log.i(TAG, "Deleted pin with id " + id + "; success = " + success);
+   Log.i(DBG, "Deleted pin with id " + id + "; success = " + success);
    logRowCount(sdb);
    sdb.close();
 }
@@ -193,7 +193,7 @@ public void deletePin(long id)
 public void deleteAll()
 {
    SQLiteDatabase sdb = getWritableDatabase();
-   Log.i(TAG, "Deleting all rows");
+   Log.i(DBG, "Deleting all rows");
    sdb.delete(TABLE, null, null);
    sdb.close();
 }
@@ -214,6 +214,7 @@ public List<Pin> getAllPins()
 //      ContentValues contentValues = new ContentValues();
 //      DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
       int id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID));
+      Log.d(DBG, "getAllPins() - ID = " + id);
       String title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE));
       String content = cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT));
       int priority = cursor.getInt(cursor.getColumnIndexOrThrow(COL_PRIORITY));
@@ -248,6 +249,6 @@ public int getCount()
  */
 private void logRowCount(SQLiteDatabase sdb)
 {
-   Log.i(TAG, "row count = " + DatabaseUtils.queryNumEntries(sdb, TABLE));
+   Log.i(DBG, "row count = " + DatabaseUtils.queryNumEntries(sdb, TABLE));
 }
 }

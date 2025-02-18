@@ -34,6 +34,7 @@
        android:layout_height="wrap_content"
        android:textIsSelectable="true"
        android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+       android:background="@android:color/transparent"
        tools:ignore="SpeakableTextPresentCheck"
        tools:text="@string/title_edit_pin"
        />
@@ -44,6 +45,7 @@
        android:layout_marginTop="2dp"
        android:textIsSelectable="true"
        android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+       android:background="@android:color/transparent"
        tools:ignore="SpeakableTextPresentCheck"
        tools:text="@string/priority_default"
        />
